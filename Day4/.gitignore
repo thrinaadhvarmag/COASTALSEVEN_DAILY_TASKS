@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+
+# Generated files
+tasks.json
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
