@@ -1,0 +1,29 @@
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+
+from app.services.websocket_service import websocket_manager
+
+
+router = APIRouter(
+    tags=["WebSocket"],
+)
+
+
+@router.websocket("/ws/orders/{user_id}")
+async def order_status_websocket(
+    websocket: WebSocket,
+    user_id: int,
+):
+    await websocket_manager.connect(
+        user_id=user_id,
+        websocket=websocket,
+    )
+
+    try:
+        while True:
+            await websocket.receive_text()
+
+    except WebSocketDisconnect:
+        websocket_manager.disconnect(
+            user_id=user_id,
+            websocket=websocket,
+        )
