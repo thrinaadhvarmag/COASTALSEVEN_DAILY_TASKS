@@ -1,0 +1,3 @@
+import {z} from "zod";
+export const taskSchema=z.object({title:z.string().trim().min(1,"Task title is required").max(100,"Title must be 100 characters or less"),description:z.string().max(2000,"Description must be 2000 characters or less").optional().or(z.literal("")),status:z.enum(["Pending","In Progress","Completed"]),priority:z.enum(["Low","Medium","High"]),project_id:z.string().min(1,"Select a project"),category_id:z.string().optional(),assignee_id:z.string().optional(),due_date:z.string().optional(),checklist:z.array(z.object({title:z.string().trim().min(1,"Checklist item cannot be empty").max(200)})).max(20)});
+export const stepFields=[["title","description","status","priority"],["project_id","category_id","assignee_id","due_date"],["checklist"]];

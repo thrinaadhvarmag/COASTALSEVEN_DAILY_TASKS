@@ -1,0 +1,48 @@
+from datetime import datetime
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
+
+from api.database import Base
+
+
+class Project(Base):
+    __tablename__ = "projects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+
+    # Stores the public path returned by the upload endpoint, for example:
+    # /uploads/projects/<generated-file-name>.png
+    image_url = Column(String(500), nullable=True)
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False,
+        index=True,
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+    updated_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    owner = relationship(
+        "User",
+        back_populates="projects",
+    )
+
+    tasks = relationship(
+        "Task",
+        back_populates="project",
+        cascade="all, delete-orphan",
+    )
