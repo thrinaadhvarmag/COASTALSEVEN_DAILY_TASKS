@@ -1,11 +1,38 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
+
 import Layout from "./components/Layout";
-const RouteGuards = lazy(() => import("./components/ProtectedRoute"));
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { ToastProvider } from "./context/ToastContext";
 
+/*
+ * ProtectedRoute exports are handled explicitly instead of trying to
+ * access properties from a React.lazy component.
+ */
+const ProtectedRoute = lazy(() =>
+  import("./components/ProtectedRoute").then((module) => ({
+    default:
+      module.ProtectedRoute ||
+      module.default?.ProtectedRoute ||
+      module.default,
+  }))
+);
+
+const AdminRoute = lazy(() =>
+  import("./components/ProtectedRoute").then((module) => ({
+    default:
+      module.AdminRoute ||
+      module.default?.AdminRoute,
+  }))
+);
+
+/* Pages */
 const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
@@ -19,7 +46,14 @@ const Profile = lazy(() => import("./pages/Profile"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 function PageLoader() {
-  return <div className="container page-section"><div className="spinner mx-auto" aria-label="Loading page" /></div>;
+  return (
+    <div className="container page-section">
+      <div
+        className="spinner mx-auto"
+        aria-label="Loading page"
+      />
+    </div>
+  );
 }
 
 function RoutesView() {
@@ -27,22 +61,43 @@ function RoutesView() {
     <Layout>
       <Suspense fallback={<PageLoader />}>
         <Routes>
+
+          {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route element={<RouteGuards.ProtectedRoute />}>
+
+          {/* Protected customer routes */}
+          <Route element={<ProtectedRoute />}>
             <Route path="/products" element={<Products />} />
-            <Route path="/products/:id" element={<ProductDetails />} />
+            <Route
+              path="/products/:id"
+              element={<ProductDetails />}
+            />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/orders" element={<Orders />} />
-            <Route path="/orders/:id" element={<OrderDetails />} />
+            <Route
+              path="/orders/:id"
+              element={<OrderDetails />}
+            />
             <Route path="/profile" element={<Profile />} />
           </Route>
-          <Route element={<RouteGuards.AdminRoute />}>
-            <Route path="/admin" element={<AdminDashboard />} />
+
+          {/* Admin route */}
+          <Route element={<AdminRoute />}>
+            <Route
+              path="/admin"
+              element={<AdminDashboard />}
+            />
           </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
+
+          {/* Fallback */}
+          <Route
+            path="*"
+            element={<Navigate to="/" replace />}
+          />
+
         </Routes>
       </Suspense>
     </Layout>
