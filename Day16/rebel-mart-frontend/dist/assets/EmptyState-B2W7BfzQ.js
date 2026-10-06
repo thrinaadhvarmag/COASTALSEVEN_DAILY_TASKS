@@ -1,0 +1,1 @@
+import{j as s}from"./index-BG-ptmOu.js";function c({icon:e,title:t,text:i,action:r}){return s.jsxs("div",{className:"card empty-state",children:[e&&s.jsx("div",{className:"empty-icon",children:s.jsx(e,{size:30})}),s.jsx("h3",{children:t}),s.jsx("p",{children:i}),r]})}export{c as E};
