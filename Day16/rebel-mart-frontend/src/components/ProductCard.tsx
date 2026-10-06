@@ -1,10 +1,11 @@
-import { memo, useCallback, useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowUpRight, Heart, ImageOff, ShoppingCart } from "lucide-react";
-import { imageUrl, money } from "../lib/constants";
-import { useCart } from "../hooks/useCart";
-import { useToast } from "../context/ToastContext";
-import type { Product } from "../types/api";
+import axios from 'axios';
+import { memo, useCallback, useState } from 'react';
+import { ArrowUpRight, Heart, ImageOff, ShoppingCart } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
+import { useCart } from '../hooks/useCart';
+import { imageUrl, money } from '../lib/constants';
+import type { ApiErrorBody, Product } from '../types/api';
 
 interface ProductCardProps {
   product: Product;
@@ -14,26 +15,23 @@ interface ProductCardProps {
   onImage?: (product: Product) => void;
 }
 
-const WISH_KEY = "rebel_mart_wishlist";
+const WISH_KEY = 'rebel_mart_wishlist';
 
 function readWish(): number[] {
   try {
-    const value: unknown = JSON.parse(localStorage.getItem(WISH_KEY) || "[]");
-    return Array.isArray(value) ? value.filter((id): id is number => typeof id === "number") : [];
+    const value: unknown = JSON.parse(localStorage.getItem(WISH_KEY) || '[]');
+
+    return Array.isArray(value) ? value.filter((id): id is number => typeof id === 'number') : [];
   } catch {
     return [];
   }
 }
 
-function ProductCard({
-  product,
-  admin = false,
-  onEdit,
-  onDelete,
-  onImage,
-}: ProductCardProps) {
+function ProductCard({ product, admin = false, onEdit, onDelete, onImage }: ProductCardProps) {
   const { add, loading } = useCart();
-  const { show } = useToast() as unknown as { show: (message: string, type?: string) => void };
+  const { show } = useToast() as unknown as {
+    show: (message: string, type?: string) => void;
+  };
   const [wish, setWish] = useState(() => readWish().includes(product.id));
 
   const toggleWishlist = useCallback(() => {
@@ -44,15 +42,20 @@ function ProductCard({
 
     localStorage.setItem(WISH_KEY, JSON.stringify(next));
     setWish(!wish);
-    show(wish ? "Removed from wishlist" : "Added to wishlist", "info");
+    show(wish ? 'Removed from wishlist' : 'Added to wishlist', 'info');
   }, [product.id, show, wish]);
 
   const addToCart = useCallback(async () => {
     try {
       await add(product.id);
-      show("Added to cart");
-    } catch (error: any) {
-      show(error?.response?.data?.detail || "Could not add to cart", "error");
+      show('Added to cart');
+    } catch (error: unknown) {
+      const detail = axios.isAxiosError<ApiErrorBody>(error)
+        ? error.response?.data?.detail
+        : undefined;
+      const message = typeof detail === 'string' ? detail : 'Could not add to cart';
+
+      show(message, 'error');
     }
   }, [add, product.id, show]);
 
@@ -68,8 +71,8 @@ function ProductCard({
             loading="lazy"
             decoding="async"
             onError={(event) => {
-              event.currentTarget.style.display = "none";
-              event.currentTarget.nextElementSibling?.classList.remove("hidden");
+              event.currentTarget.style.display = 'none';
+              event.currentTarget.nextElementSibling?.classList.remove('hidden');
             }}
           />
         ) : (
@@ -89,8 +92,9 @@ function ProductCard({
 
         <div className="media-actions">
           <button className="round-action" onClick={toggleWishlist} aria-label="Wishlist">
-            <Heart size={17} fill={wish ? "currentColor" : "none"} />
+            <Heart size={17} fill={wish ? 'currentColor' : 'none'} />
           </button>
+
           <Link className="round-action" to={`/products/${product.id}`} aria-label="View product">
             <ArrowUpRight size={17} />
           </Link>
@@ -105,11 +109,13 @@ function ProductCard({
 
       <div className="product-body">
         <div className="eyebrow">Rebel Mart</div>
+
         <Link className="product-title" to={`/products/${product.id}`}>
           {product.name}
         </Link>
+
         <p className="product-description">
-          {product.description || "Quality product from Rebel Mart."}
+          {product.description || 'Quality product from Rebel Mart.'}
         </p>
 
         <div className="product-footer">
@@ -125,13 +131,21 @@ function ProductCard({
               onClick={addToCart}
             >
               <ShoppingCart size={15} />
-              {loading ? "Adding…" : "Add to cart"}
+              {loading ? 'Adding…' : 'Add to cart'}
             </button>
           ) : (
             <div className="admin-actions">
-              <button className="btn-secondary tiny" onClick={() => onEdit?.(product)}>Edit</button>
-              <button className="btn-secondary tiny" onClick={() => onImage?.(product)}>Image</button>
-              <button className="btn-danger tiny" onClick={() => onDelete?.(product)}>Delete</button>
+              <button className="btn-secondary tiny" onClick={() => onEdit?.(product)}>
+                Edit
+              </button>
+
+              <button className="btn-secondary tiny" onClick={() => onImage?.(product)}>
+                Image
+              </button>
+
+              <button className="btn-danger tiny" onClick={() => onDelete?.(product)}>
+                Delete
+              </button>
             </div>
           )}
         </div>

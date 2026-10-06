@@ -1,7 +1,16 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useCartStore } from "../store/cartStore";
-import { authApi } from "../services/api";
-import type { User } from "../types/api";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import { useCartStore } from '../store/cartStore';
+import { authApi } from '../services/api';
+import type { User } from '../types/api';
 
 interface AuthContextValue {
   token: string | null;
@@ -23,79 +32,94 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem("rebel_mart_token"),
-  );
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('rebel_mart_token'));
   const [user, setUser] = useState<User | null>(() => {
     try {
-      return JSON.parse(localStorage.getItem("rebel_mart_user") || "null") as User | null;
+      return JSON.parse(localStorage.getItem('rebel_mart_user') || 'null') as User | null;
     } catch {
       return null;
     }
   });
   const [loading, setLoading] = useState(Boolean(token));
-  const resetCart = useCartStore((state: any) => state.reset);
-  const refreshCart = useCartStore((state: any) => state.refreshCart);
+  const initialToken = useRef(token).current;
 
-  const updateUser = (next: User) => {
-    localStorage.setItem("rebel_mart_user", JSON.stringify(next));
+  const resetCart = useCallback(() => {
+    useCartStore.getState().reset();
+  }, []);
+
+  const refreshCart = useCallback(async () => {
+    await useCartStore.getState().refreshCart();
+  }, []);
+
+  const updateUser = useCallback((next: User) => {
+    localStorage.setItem('rebel_mart_user', JSON.stringify(next));
     setUser(next);
-  };
+  }, []);
 
-  const logout = () => {
-    localStorage.removeItem("rebel_mart_token");
-    localStorage.removeItem("rebel_mart_user");
+  const logout = useCallback(() => {
+    localStorage.removeItem('rebel_mart_token');
+    localStorage.removeItem('rebel_mart_user');
     setToken(null);
     setUser(null);
+    setLoading(false);
     resetCart();
-  };
+  }, [resetCart]);
 
-  const refreshUser = async (): Promise<User> => {
+  const refreshUser = useCallback(async (): Promise<User> => {
     const data = await authApi.me();
     updateUser(data);
     return data;
-  };
+  }, [updateUser]);
 
   useEffect(() => {
-    if (!token) {
-      setLoading(false);
+    if (!initialToken) {
       resetCart();
       return;
     }
 
+    let active = true;
+
     refreshUser()
       .then(() => refreshCart().catch(() => undefined))
       .catch(logout)
-      .finally(() => setLoading(false));
-    // Auth is initialized once when the provider mounts.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [logout, refreshCart, refreshUser, resetCart]);
 
   useEffect(() => {
     const expire = () => logout();
-    window.addEventListener("rebel-auth-expired", expire);
-    return () => window.removeEventListener("rebel-auth-expired", expire);
-  }, []);
+    window.addEventListener('rebel-auth-expired', expire);
+    return () => window.removeEventListener('rebel-auth-expired', expire);
+  }, [logout]);
 
-  const login = async (email: string, password: string): Promise<User> => {
-    const data = await authApi.login({ email, password });
-    localStorage.setItem("rebel_mart_token", data.access_token);
-    setToken(data.access_token);
+  const login = useCallback(
+    async (email: string, password: string): Promise<User> => {
+      const data = await authApi.login({ email, password });
+      localStorage.setItem('rebel_mart_token', data.access_token);
+      setToken(data.access_token);
 
-    const me = await authApi.me();
-    updateUser(me);
-    await refreshCart().catch(() => undefined);
-    return me;
-  };
+      const me = await authApi.me();
+      updateUser(me);
+      await refreshCart().catch(() => undefined);
+      return me;
+    },
+    [refreshCart, updateUser],
+  );
 
-  const register = async (
-    username: string,
-    email: string,
-    password: string,
-  ): Promise<User> => {
-    await authApi.register({ username, email, password });
-    return login(email, password);
-  };
+  const register = useCallback(
+    async (username: string, email: string, password: string): Promise<User> => {
+      await authApi.register({ username, email, password });
+      return login(email, password);
+    },
+    [login],
+  );
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -103,14 +127,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       user,
       loading,
       isAuthenticated: Boolean(token && user),
-      isAdmin: user?.role === "admin",
+      isAdmin: user?.role === 'admin',
       login,
       register,
       logout,
       refreshUser,
       updateUser,
     }),
-    [token, user, loading],
+    [loading, login, logout, refreshUser, register, token, updateUser, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -118,8 +142,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 export function useAuth(): AuthContextValue {
   const value = useContext(AuthContext);
+
   if (!value) {
-    throw new Error("useAuth must be used inside AuthProvider");
+    throw new Error('useAuth must be used inside AuthProvider');
   }
+
   return value;
 }

@@ -8,47 +8,39 @@ export interface Product {
   created_at: string;
   updated_at: string;
 }
-
 export interface ProductCreateRequest {
   name: string;
   description?: string | null;
   price: number;
   stock: number;
 }
-
 export interface ProductUpdateRequest {
   name?: string;
   description?: string | null;
   price?: number;
   stock?: number;
 }
-
 export interface ProductQuery {
   page: number;
   page_size: number;
   search?: string;
 }
-
 export interface ProductCountResponse {
   total: number;
 }
-
 export interface RegisterRequest {
   username: string;
   email: string;
   password: string;
 }
-
 export interface LoginRequest {
   email: string;
   password: string;
 }
-
 export interface TokenResponse {
   access_token: string;
   token_type: string;
 }
-
 export interface User {
   id: number;
   username: string;
@@ -57,16 +49,13 @@ export interface User {
   profile_image_url: string | null;
   created_at: string;
 }
-
 export interface CartItem {
   product_id: number;
   quantity: number;
 }
-
 export interface CartResponse {
   items: CartItem[];
 }
-
 export interface OrderItem {
   id: number;
   product_id: number;
@@ -74,7 +63,6 @@ export interface OrderItem {
   unit_price: number;
   subtotal: number;
 }
-
 export interface Order {
   id: number;
   user_id: number;
@@ -91,12 +79,10 @@ export interface Order {
   delivery_instructions: string | null;
   items: OrderItem[];
 }
-
 export interface ApiErrorDetail {
   msg?: string;
   message?: string;
 }
-
 export interface ApiErrorBody {
   detail?: string | ApiErrorDetail[];
 }

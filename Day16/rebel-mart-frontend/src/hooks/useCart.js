@@ -1,5 +1,4 @@
-import { useCartStore } from "../store/cartStore";
-
+import { useCartStore } from '../store/cartStore';
 export function useCart() {
   const items = useCartStore((state) => state.items);
   const loading = useCartStore((state) => state.loading);
@@ -10,6 +9,5 @@ export function useCart() {
   const remove = useCartStore((state) => state.remove);
   const clear = useCartStore((state) => state.clear);
   const count = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-
   return { items, loading, initialized, count, refreshCart, add, update, remove, clear };
 }

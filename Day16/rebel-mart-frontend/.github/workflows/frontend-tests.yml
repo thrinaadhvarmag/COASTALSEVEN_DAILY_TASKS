@@ -3,22 +3,22 @@ name: Rebel Mart Frontend Tests
 on:
   push:
     paths:
-      - "src/**"
-      - "e2e/**"
-      - "package.json"
-      - "package-lock.json"
-      - "vite.config.ts"
-      - "playwright.config.ts"
-      - "tsconfig.json"
+      - 'src/**'
+      - 'e2e/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'playwright.config.ts'
+      - 'tsconfig.json'
   pull_request:
     paths:
-      - "src/**"
-      - "e2e/**"
-      - "package.json"
-      - "package-lock.json"
-      - "vite.config.ts"
-      - "playwright.config.ts"
-      - "tsconfig.json"
+      - 'src/**'
+      - 'e2e/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'playwright.config.ts'
+      - 'tsconfig.json'
 
 jobs:
   test:
