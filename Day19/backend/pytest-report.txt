@@ -1,0 +1,351 @@
+FFFFFFFFF.FFFFFFFFFFFFFF.F.F.EEEE.FF.                                    [100%]
+==================================== ERRORS ====================================
+_____________________ ERROR at setup of test_get_products ______________________
+venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:924: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+tests/conftest.py:86: in auth_headers
+    assert register_response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+---------------------------- Captured stderr setup -----------------------------
+2026-10-09 12:01:14,834 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log setup ------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+______________________ ERROR at setup of test_get_product ______________________
+venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:924: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+tests/conftest.py:86: in auth_headers
+    assert register_response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+---------------------------- Captured stderr setup -----------------------------
+2026-10-09 12:01:14,961 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log setup ------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+_________________ ERROR at setup of test_get_product_not_found _________________
+venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:924: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+tests/conftest.py:86: in auth_headers
+    assert register_response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+---------------------------- Captured stderr setup -----------------------------
+2026-10-09 12:01:15,065 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log setup ------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+__________________ ERROR at setup of test_product_validation ___________________
+venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:924: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+tests/conftest.py:86: in auth_headers
+    assert register_response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+---------------------------- Captured stderr setup -----------------------------
+2026-10-09 12:01:15,158 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log setup ------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+=================================== FAILURES ===================================
+______________________________ test_register_user ______________________________
+tests/test_auth.py:7: in test_register_user
+    assert response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:08,804 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+_________________________ test_duplicate_registration __________________________
+tests/test_auth.py:22: in test_duplicate_registration
+    assert first_response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:08,959 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+__________________________________ test_login __________________________________
+tests/test_auth.py:42: in test_login
+    assert register_response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,029 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+______________________________ test_invalid_login ______________________________
+tests/test_auth.py:76: in test_invalid_login
+    assert register_response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,098 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+____________________________ test_get_current_user _____________________________
+tests/test_auth.py:99: in test_get_current_user
+    assert register_response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,170 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+____________________________ test_me_without_token _____________________________
+tests/test_auth.py:135: in test_me_without_token
+    assert response.status_code == 401
+E   assert 400 == 401
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,239 INFO httpx HTTP Request: GET http://testserver/auth/me "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/auth/me "HTTP/1.1 400 Bad Request"
+___________________________ test_email_is_normalized ___________________________
+tests/test_auth.py:146: in test_email_is_normalized
+    assert response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,311 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+_______________________________ test_invalid_otp _______________________________
+tests/test_auth.py:155: in test_invalid_otp
+    assert response.status_code == 202
+E   assert 400 == 202
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,380 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+2026-10-09 12:01:09,388 INFO httpx HTTP Request: POST http://testserver/auth/login "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/login "HTTP/1.1 400 Bad Request"
+__________________ test_otp_verification_marks_email_verified __________________
+tests/test_auth.py:166: in test_otp_verification_marks_email_verified
+    assert verify.status_code == 200
+E   assert 400 == 200
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,572 INFO httpx HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+2026-10-09 12:01:09,575 INFO httpx HTTP Request: POST http://testserver/auth/login "HTTP/1.1 400 Bad Request"
+2026-10-09 12:01:09,577 INFO httpx HTTP Request: POST http://testserver/auth/login/verify "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/register "HTTP/1.1 400 Bad Request"
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/login "HTTP/1.1 400 Bad Request"
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/login/verify "HTTP/1.1 400 Bad Request"
+____________________________ test_security_headers _____________________________
+tests/test_batch7_security.py:13: in test_security_headers
+    assert response.status_code == 200
+E   assert 400 == 200
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,641 INFO httpx HTTP Request: GET http://testserver/ "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/ "HTTP/1.1 400 Bad Request"
+_______________________ test_health_is_not_rate_limited ________________________
+tests/test_batch7_security.py:23: in test_health_is_not_rate_limited
+    assert response.status_code == 200
+E   assert 400 == 200
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,702 INFO httpx HTTP Request: GET http://testserver/health "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/health "HTTP/1.1 400 Bad Request"
+__________________ test_monitoring_endpoints_are_available[/] __________________
+tests/test_batch7_security.py:28: in test_monitoring_endpoints_are_available
+    assert client.get(path).status_code in {200, 503}
+E   AssertionError: assert 400 in {200, 503}
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+E    +    where <Response [400 Bad Request]> = get('/')
+E    +      where get = <starlette.testclient.TestClient object at 0x70a69e14f650>.get
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,761 INFO httpx HTTP Request: GET http://testserver/ "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/ "HTTP/1.1 400 Bad Request"
+_______________ test_monitoring_endpoints_are_available[/health] _______________
+tests/test_batch7_security.py:28: in test_monitoring_endpoints_are_available
+    assert client.get(path).status_code in {200, 503}
+E   AssertionError: assert 400 in {200, 503}
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+E    +    where <Response [400 Bad Request]> = get('/health')
+E    +      where get = <starlette.testclient.TestClient object at 0x70a69e14d6a0>.get
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,820 INFO httpx HTTP Request: GET http://testserver/health "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/health "HTTP/1.1 400 Bad Request"
+____________ test_monitoring_endpoints_are_available[/health/ready] ____________
+tests/test_batch7_security.py:28: in test_monitoring_endpoints_are_available
+    assert client.get(path).status_code in {200, 503}
+E   AssertionError: assert 400 in {200, 503}
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+E    +    where <Response [400 Bad Request]> = get('/health/ready')
+E    +      where get = <starlette.testclient.TestClient object at 0x70a69e14ecc0>.get
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,890 INFO httpx HTTP Request: GET http://testserver/health/ready "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/health/ready "HTTP/1.1 400 Bad Request"
+______ test_private_upload_directories_are_not_mounted_as_one_public_tree ______
+tests/test_batch7_security.py:33: in test_private_upload_directories_are_not_mounted_as_one_public_tree
+    assert response.status_code in {404, 405}
+E   assert 400 in {404, 405}
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:09,949 INFO httpx HTTP Request: GET http://testserver/uploads/invoices/does-not-exist.pdf "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/uploads/invoices/does-not-exist.pdf "HTTP/1.1 400 Bad Request"
+_________ test_product_and_profile_upload_routes_are_public_media_only _________
+tests/test_batch7_security.py:37: in test_product_and_profile_upload_routes_are_public_media_only
+    assert client.get("/uploads/products/does-not-exist.webp").status_code == 404
+E   AssertionError: assert 400 == 404
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+E    +    where <Response [400 Bad Request]> = get('/uploads/products/does-not-exist.webp')
+E    +      where get = <starlette.testclient.TestClient object at 0x70a69eaeeae0>.get
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:10,008 INFO httpx HTTP Request: GET http://testserver/uploads/products/does-not-exist.webp "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/uploads/products/does-not-exist.webp "HTTP/1.1 400 Bad Request"
+_____________________________ test_get_empty_cart ______________________________
+tests/test_cart.py:87: in test_get_empty_cart
+    assert response.status_code == 200
+E   assert 400 == 200
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:10,292 INFO httpx HTTP Request: GET http://testserver/cart "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/cart "HTTP/1.1 400 Bad Request"
+____________________________ test_add_item_to_cart _____________________________
+tests/test_cart.py:104: in test_add_item_to_cart
+    assert response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:11,057 INFO httpx HTTP Request: POST http://testserver/cart/items "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/cart/items "HTTP/1.1 400 Bad Request"
+___________________ test_add_same_product_increases_quantity ___________________
+tests/test_cart.py:134: in test_add_same_product_increases_quantity
+    assert response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:11,386 INFO httpx HTTP Request: POST http://testserver/cart/items "HTTP/1.1 400 Bad Request"
+2026-10-09 12:01:11,389 INFO httpx HTTP Request: POST http://testserver/cart/items "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/cart/items "HTTP/1.1 400 Bad Request"
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/cart/items "HTTP/1.1 400 Bad Request"
+____________________________ test_update_cart_item _____________________________
+tests/test_cart.py:161: in test_update_cart_item
+    assert response.status_code == 200
+E   assert 400 == 200
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:11,657 INFO httpx HTTP Request: POST http://testserver/cart/items "HTTP/1.1 400 Bad Request"
+2026-10-09 12:01:11,661 INFO httpx HTTP Request: PUT http://testserver/cart/items/1 "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/cart/items "HTTP/1.1 400 Bad Request"
+INFO     httpx:_client.py:1025 HTTP Request: PUT http://testserver/cart/items/1 "HTTP/1.1 400 Bad Request"
+____________________________ test_remove_cart_item _____________________________
+tests/test_cart.py:186: in test_remove_cart_item
+    assert response.status_code == 200
+E   assert 400 == 200
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:11,976 INFO httpx HTTP Request: POST http://testserver/cart/items "HTTP/1.1 400 Bad Request"
+2026-10-09 12:01:11,979 INFO httpx HTTP Request: DELETE http://testserver/cart/items/1 "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/cart/items "HTTP/1.1 400 Bad Request"
+INFO     httpx:_client.py:1025 HTTP Request: DELETE http://testserver/cart/items/1 "HTTP/1.1 400 Bad Request"
+__________________________________ test_root ___________________________________
+tests/test_health.py:4: in test_root
+    assert response.status_code == 200
+E   assert 400 == 200
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:12,052 INFO httpx HTTP Request: GET http://testserver/ "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/ "HTTP/1.1 400 Bad Request"
+______________________________ test_health_check _______________________________
+tests/test_health.py:11: in test_health_check
+    assert response.status_code == 200
+E   assert 400 == 200
+E    +  where 400 = <Response [400 Bad Request]>.status_code
+----------------------------- Captured stderr call -----------------------------
+2026-10-09 12:01:12,126 INFO httpx HTTP Request: GET http://testserver/health "HTTP/1.1 400 Bad Request"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/health "HTTP/1.1 400 Bad Request"
+__________________________ test_create_order_success ___________________________
+tests/test_orders.py:149: in test_create_order_success
+    email_mock.assert_called_once_with(
+/usr/lib/python3.12/unittest/mock.py:956: in assert_called_once_with
+    return self.assert_called_with(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/unittest/mock.py:944: in assert_called_with
+    raise AssertionError(_error_message()) from cause
+E   AssertionError: expected call not found.
+E   Expected: mock('service_test_user@gmail.com', 1, 100000.0, 'service_test_user')
+E     Actual: mock('service_test_user@gmail.com', 1, 100000.0, None)
+_____________________ test_create_order_insufficient_stock _____________________
+tests/test_orders.py:256: in test_create_order_insufficient_stock
+    assert exc_info.value.status_code == 400
+E   assert 409 == 400
+E    +  where 409 = HTTPException(status_code=409, detail="Insufficient stock for product 'Limited Stock Product'. Available: 2, Requested: 5").status_code
+E    +    where HTTPException(status_code=409, detail="Insufficient stock for product 'Limited Stock Product'. Available: 2, Requested: 5") = <ExceptionInfo HTTPException(status_code=409, detail="Insufficient stock for product 'Limited Stock Product'. Available: 2, Requested: 5") tblen=2>.value
+__________________________ test_create_order_success ___________________________
+tests/test_validation.py:140: in test_create_order_success
+    email_mock.assert_called_once_with(
+/usr/lib/python3.12/unittest/mock.py:956: in assert_called_once_with
+    return self.assert_called_with(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/unittest/mock.py:944: in assert_called_with
+    raise AssertionError(_error_message()) from cause
+E   AssertionError: expected call not found.
+E   Expected: mock('service_test_user@gmail.com', 1, 100000.0)
+E     Actual: mock('service_test_user@gmail.com', 1, 100000.0, None)
+_____________________ test_create_order_insufficient_stock _____________________
+tests/test_validation.py:184: in test_create_order_insufficient_stock
+    assert exc_info.value.status_code == 400
+E   assert 409 == 400
+E    +  where 409 = HTTPException(status_code=409, detail="Insufficient stock for product 'Limited Stock Product'. Available: 2, Requested: 5").status_code
+E    +    where HTTPException(status_code=409, detail="Insufficient stock for product 'Limited Stock Product'. Available: 2, Requested: 5") = <ExceptionInfo HTTPException(status_code=409, detail="Insufficient stock for product 'Limited Stock Product'. Available: 2, Requested: 5") tblen=2>.value
+=============================== warnings summary ===============================
+venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/hv/Downloads/RebelMart_Batch7_Todays_Functionalities/RebelMart_Batch7_Day18_Email_OTP_Upgrade/backend/venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_auth.py::test_register_user - assert 400 == 201
+FAILED tests/test_auth.py::test_duplicate_registration - assert 400 == 201
+FAILED tests/test_auth.py::test_login - assert 400 == 201
+FAILED tests/test_auth.py::test_invalid_login - assert 400 == 201
+FAILED tests/test_auth.py::test_get_current_user - assert 400 == 201
+FAILED tests/test_auth.py::test_me_without_token - assert 400 == 401
+FAILED tests/test_auth.py::test_email_is_normalized - assert 400 == 201
+FAILED tests/test_auth.py::test_invalid_otp - assert 400 == 202
+FAILED tests/test_auth.py::test_otp_verification_marks_email_verified - asser...
+FAILED tests/test_batch7_security.py::test_security_headers - assert 400 == 200
+FAILED tests/test_batch7_security.py::test_health_is_not_rate_limited - asser...
+FAILED tests/test_batch7_security.py::test_monitoring_endpoints_are_available[/]
+FAILED tests/test_batch7_security.py::test_monitoring_endpoints_are_available[/health]
+FAILED tests/test_batch7_security.py::test_monitoring_endpoints_are_available[/health/ready]
+FAILED tests/test_batch7_security.py::test_private_upload_directories_are_not_mounted_as_one_public_tree
+FAILED tests/test_batch7_security.py::test_product_and_profile_upload_routes_are_public_media_only
+FAILED tests/test_cart.py::test_get_empty_cart - assert 400 == 200
+FAILED tests/test_cart.py::test_add_item_to_cart - assert 400 == 201
+FAILED tests/test_cart.py::test_add_same_product_increases_quantity - assert ...
+FAILED tests/test_cart.py::test_update_cart_item - assert 400 == 200
+FAILED tests/test_cart.py::test_remove_cart_item - assert 400 == 200
+FAILED tests/test_health.py::test_root - assert 400 == 200
+FAILED tests/test_health.py::test_health_check - assert 400 == 200
+FAILED tests/test_orders.py::test_create_order_success - AssertionError: expe...
+FAILED tests/test_orders.py::test_create_order_insufficient_stock - assert 40...
+FAILED tests/test_validation.py::test_create_order_success - AssertionError: ...
+FAILED tests/test_validation.py::test_create_order_insufficient_stock - asser...
+ERROR tests/test_products.py::test_get_products - assert 400 == 201
+ERROR tests/test_products.py::test_get_product - assert 400 == 201
+ERROR tests/test_products.py::test_get_product_not_found - assert 400 == 201
+ERROR tests/test_products.py::test_product_validation - assert 400 == 201
+27 failed, 6 passed, 1 warning, 4 errors in 9.29s

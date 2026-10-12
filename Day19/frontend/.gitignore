@@ -1,0 +1,4 @@
+.env
+
+# Lighthouse output
+lighthouse-report.json
