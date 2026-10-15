@@ -1,0 +1,169 @@
+
+Running 8 tests using 2 workers
+
+  ✘  1 [chromium] › e2e/rebel-mart-journey.spec.ts:21:5 › Rebel Mart customer journey › customer can login, browse a product, add it to cart and verify the cart (30.7s)
+  ✘  2 [chromium] › e2e/login.spec.ts:33:5 › Login page edge cases › renders the login form and blocks empty submit (30.7s)
+  ✓  3 [chromium] › e2e/smoke.spec.ts:2:1 › public Rebel Mart navigation works (1.5s)
+  ✘  4 [chromium] › e2e/login.spec.ts:41:5 › Login page edge cases › shows an error for invalid credentials (30.3s)
+  ✓  5 [chromium] › e2e/login.spec.ts:55:5 › Login page edge cases › toggles password visibility (2.1s)
+  ✘  6 [chromium] › e2e/login.spec.ts:63:5 › Login page edge cases › logs in a customer and redirects to products (30.3s)
+  ✘  7 [chromium] › e2e/login.spec.ts:71:5 › Login page edge cases › logs in an admin and redirects to admin dashboard (30.3s)
+  ✘  8 [chromium] › e2e/login.spec.ts:79:5 › Login page edge cases › redirects back to the protected page after successful login (30.2s)
+
+
+  1) [chromium] › e2e/login.spec.ts:33:5 › Login page edge cases › renders the login form and blocks empty submit 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /sign in/i })
+
+
+      36 |         await expect(page.locator('input[type="email"]')).toHaveAttribute("required");
+      37 |         await expect(page.locator('input[type="password"]')).toHaveAttribute("required");
+    > 38 |         await page.getByRole("button", { name: /sign in/i }).click();
+         |                                                              ^
+      39 |         await expect(page.locator('input[type="email"]')).toBeFocused();
+      40 |     });
+      41 |     test("shows an error for invalid credentials", async ({ page }) => {
+        at /home/hv/Downloads/RebelMart_Batch7_AI_Updated/RebelMart_Batch7_Todays_Functionalities/frontend/e2e/login.spec.ts:38:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/login-Login-page-edge-case-09267-orm-and-blocks-empty-submit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/login-Login-page-edge-case-09267-orm-and-blocks-empty-submit-chromium/error-context.md
+
+  2) [chromium] › e2e/login.spec.ts:41:5 › Login page edge cases › shows an error for invalid credentials 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /sign in/i })
+
+
+      50 |         await page.getByLabel("Email").fill("wrong@example.com");
+      51 |         await page.getByPlaceholder("Your password").fill("wrongpass");
+    > 52 |         await page.getByRole("button", { name: /sign in/i }).click();
+         |                                                              ^
+      53 |         await expect(page.getByText("Invalid email or password")).toBeVisible();
+      54 |     });
+      55 |     test("toggles password visibility", async ({ page }) => {
+        at /home/hv/Downloads/RebelMart_Batch7_AI_Updated/RebelMart_Batch7_Todays_Functionalities/frontend/e2e/login.spec.ts:52:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/login-Login-page-edge-case-06642-ror-for-invalid-credentials-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/login-Login-page-edge-case-06642-ror-for-invalid-credentials-chromium/error-context.md
+
+  3) [chromium] › e2e/login.spec.ts:63:5 › Login page edge cases › logs in a customer and redirects to products 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /sign in/i })
+
+
+      66 |         await page.getByLabel("Email").fill("demo@example.com");
+      67 |         await page.getByPlaceholder("Your password").fill("secret123");
+    > 68 |         await page.getByRole("button", { name: /sign in/i }).click();
+         |                                                              ^
+      69 |         await expect(page).toHaveURL(/\/products$/);
+      70 |     });
+      71 |     test("logs in an admin and redirects to admin dashboard", async ({ page }) => {
+        at /home/hv/Downloads/RebelMart_Batch7_AI_Updated/RebelMart_Batch7_Todays_Functionalities/frontend/e2e/login.spec.ts:68:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/login-Login-page-edge-case-31a1e-r-and-redirects-to-products-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/login-Login-page-edge-case-31a1e-r-and-redirects-to-products-chromium/error-context.md
+
+  4) [chromium] › e2e/login.spec.ts:71:5 › Login page edge cases › logs in an admin and redirects to admin dashboard 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /sign in/i })
+
+
+      74 |         await page.getByLabel("Email").fill("admin@example.com");
+      75 |         await page.getByPlaceholder("Your password").fill("secret123");
+    > 76 |         await page.getByRole("button", { name: /sign in/i }).click();
+         |                                                              ^
+      77 |         await expect(page).toHaveURL(/\/admin$/);
+      78 |     });
+      79 |     test("redirects back to the protected page after successful login", async ({ page }) => {
+        at /home/hv/Downloads/RebelMart_Batch7_AI_Updated/RebelMart_Batch7_Todays_Functionalities/frontend/e2e/login.spec.ts:76:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/login-Login-page-edge-case-89322-edirects-to-admin-dashboard-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/login-Login-page-edge-case-89322-edirects-to-admin-dashboard-chromium/error-context.md
+
+  5) [chromium] › e2e/login.spec.ts:79:5 › Login page edge cases › redirects back to the protected page after successful login 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /sign in/i })
+
+
+      83 |         await page.getByLabel("Email").fill("demo@example.com");
+      84 |         await page.getByPlaceholder("Your password").fill("secret123");
+    > 85 |         await page.getByRole("button", { name: /sign in/i }).click();
+         |                                                              ^
+      86 |         await expect(page).toHaveURL(/\/profile$/);
+      87 |     });
+      88 | });
+        at /home/hv/Downloads/RebelMart_Batch7_AI_Updated/RebelMart_Batch7_Todays_Functionalities/frontend/e2e/login.spec.ts:85:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/login-Login-page-edge-case-ab5c6-page-after-successful-login-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/login-Login-page-edge-case-ab5c6-page-after-successful-login-chromium/error-context.md
+
+  6) [chromium] › e2e/rebel-mart-journey.spec.ts:21:5 › Rebel Mart customer journey › customer can login, browse a product, add it to cart and verify the cart 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByLabel('Email')
+        - locator resolved to <input value="" required="" type="email" class="input" placeholder="you@gmail.com"/>
+        - fill("test@rebelmart.com")
+      - attempting fill action
+        - waiting for element to be visible, enabled and editable
+
+
+      242 |         await page
+      243 |             .getByLabel("Email")
+    > 244 |             .fill("test@rebelmart.com");
+          |              ^
+      245 |         await page
+      246 |             .getByLabel("Password")
+      247 |             .fill("TestPassword123");
+        at /home/hv/Downloads/RebelMart_Batch7_AI_Updated/RebelMart_Batch7_Todays_Functionalities/frontend/e2e/rebel-mart-journey.spec.ts:244:14
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rebel-mart-journey-Rebel-M-95b9a-to-cart-and-verify-the-cart-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rebel-mart-journey-Rebel-M-95b9a-to-cart-and-verify-the-cart-chromium/error-context.md
+
+  6 failed
+    [chromium] › e2e/login.spec.ts:33:5 › Login page edge cases › renders the login form and blocks empty submit 
+    [chromium] › e2e/login.spec.ts:41:5 › Login page edge cases › shows an error for invalid credentials 
+    [chromium] › e2e/login.spec.ts:63:5 › Login page edge cases › logs in a customer and redirects to products 
+    [chromium] › e2e/login.spec.ts:71:5 › Login page edge cases › logs in an admin and redirects to admin dashboard 
+    [chromium] › e2e/login.spec.ts:79:5 › Login page edge cases › redirects back to the protected page after successful login 
+    [chromium] › e2e/rebel-mart-journey.spec.ts:21:5 › Rebel Mart customer journey › customer can login, browse a product, add it to cart and verify the cart 
+  2 passed (2.7m)
