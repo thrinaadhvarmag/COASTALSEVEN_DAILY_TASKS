@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./components/Layout";
@@ -38,6 +38,20 @@ function PageLoader() {
             <div className="spinner mx-auto" aria-label="Loading page" />
         </div>
     );
+}
+
+function ScrollToTop() {
+    const { pathname, search } = useLocation();
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        if (document.documentElement) {
+            document.documentElement.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        }
+        if (document.body) {
+            document.body.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        }
+    }, [pathname, search]);
+    return null;
 }
 
 function RoutesView() {
@@ -82,7 +96,12 @@ function RoutesView() {
 
     // Authentication screens are intentionally standalone: no storefront header,
     // category navigation, mobile bottom bar, live chat, AI launcher, or footer.
-    return isAuthPage ? routeContent : <Layout>{routeContent}</Layout>;
+    return (
+        <>
+            <ScrollToTop />
+            {isAuthPage ? routeContent : <Layout>{routeContent}</Layout>}
+        </>
+    );
 }
 
 function AppShell() {

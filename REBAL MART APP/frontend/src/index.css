@@ -27,11 +27,11 @@
   --surface-3: #22222a;
   --surface-elevated: #282832;
 
-  /* Borders: Gold Accented & Subtle Glass Borders */
+  /* Borders: Royal Gold Accented & Subtle Glass Borders */
   --border: rgba(255, 255, 255, 0.08);
   --border-subtle: rgba(255, 255, 255, 0.04);
-  --border-gold: rgba(212, 175, 55, 0.45);
-  --border-gold-subtle: rgba(212, 175, 55, 0.2);
+  --border-gold: rgba(197, 160, 89, 0.45);
+  --border-gold-subtle: rgba(197, 160, 89, 0.2);
   --border-crimson: rgba(225, 29, 72, 0.35);
 
   /* Typography */
@@ -40,11 +40,11 @@
   --muted: #a1a1aa;
   --faint: #71717a;
 
-  /* Iconic Rebel Star Black & Gold Accents */
-  --accent: #d4af37;
-  --accent-gold: #f3c262;
-  --accent-dark-gold: #b38f2a;
-  --accent-strong: #f3c262;
+  /* Iconic Rebel Star Black & Metallic Royal Gold Accents */
+  --accent: #c5a059;
+  --accent-gold: #dfba56;
+  --accent-dark-gold: #9a782a;
+  --accent-strong: #dfba56;
   --accent-crimson: #e11d48;
   --accent-crimson-hover: #f43f5e;
   --accent-glow: none;
@@ -134,17 +134,32 @@ html {
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  background-color: var(--bg);
 }
 
 body {
   margin: 0;
+  width: 100%;
+  max-width: 100%;
   min-width: 320px;
   min-height: 100vh;
-  background: var(--bg-gradient);
+  background: var(--bg);
   color: var(--text);
   line-height: 1.55;
   transition: background-color 0.25s ease, color 0.25s ease;
   overflow-x: hidden;
+  position: relative;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -237,24 +252,23 @@ a {
   user-select: none;
 }
 
-/* Dark Mode: Black & Gold Primary Button */
-:root,
+/* Dark Mode: Black & Metallic Royal Gold Primary Button */
 :root[data-theme="dark"] .btn-primary,
 .dark .btn-primary {
-  background: #d4af37;
+  background: linear-gradient(135deg, #dfba56 0%, #c59b27 50%, #9e7819 100%);
   color: #09090b;
-  border: 1px solid #f3c262;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  border: 1px solid #c59b27;
+  box-shadow: 0 3px 12px rgba(197, 155, 39, 0.28);
   font-weight: 800;
 }
 
 :root[data-theme="dark"] .btn-primary:hover:not(:disabled),
 .dark .btn-primary:hover:not(:disabled) {
-  background: #f3c262;
+  background: linear-gradient(135deg, #ecd07a 0%, #dfba56 50%, #b38b20 100%);
   color: #000000;
-  border-color: #fde047;
+  border-color: #dfba56;
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.35);
+  box-shadow: 0 5px 18px rgba(197, 155, 39, 0.38);
 }
 
 /* Light Mode: Favicon Rebel Crimson Primary Button */
@@ -505,7 +519,7 @@ a {
 .store-announcement {
   min-height: 38px;
   background: #09090b;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.35);
+  border-bottom: 1px solid rgba(197, 160, 89, 0.35);
   color: #f4f4f7;
   font-size: 11.5px;
   font-weight: 600;
@@ -532,9 +546,14 @@ a {
 }
 
 .store-announcement .badge-pill {
-  background: #d4af37;
-  color: #09090b;
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  background: rgba(197, 160, 89, 0.18);
+  color: #dfba56;
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  padding: 3px 9px;
   border-radius: 999px;
   font-size: 10px;
   font-weight: 850;
@@ -547,6 +566,39 @@ a {
   background: #dc2626;
   color: #ffffff;
   border: 1px solid #b91c1c;
+}
+
+@media (max-width: 768px) {
+  .store-announcement {
+    padding: 6px 12px;
+    font-size: 11px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+    min-height: auto;
+  }
+  .store-announcement .ticker-content {
+    gap: 8px;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .store-announcement .ticker-content span:nth-child(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .store-announcement .ticker-content span:nth-child(3),
+  .store-announcement .ticker-content span:nth-child(4) {
+    display: none;
+  }
+  .store-announcement a {
+    display: none;
+  }
 }
 
 .store-announcement a {
@@ -840,30 +892,30 @@ a {
 .dark .theme-toggle-switch,
 .theme-toggle-switch.is-dark {
   background: #111114;
-  border-color: rgba(212, 175, 55, 0.4);
+  border-color: rgba(197, 160, 89, 0.45);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 :root[data-theme="dark"] .theme-toggle-switch:hover,
 .dark .theme-toggle-switch:hover,
 .theme-toggle-switch.is-dark:hover {
-  border-color: #f3c262;
+  border-color: #c5a059;
   background: #18181d;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 10px rgba(197, 160, 89, 0.25);
   transform: translateY(-1px);
 }
 
 :root[data-theme="dark"] .theme-toggle-thumb-icon,
 .dark .theme-toggle-thumb-icon,
 .theme-toggle-switch.is-dark .theme-toggle-thumb-icon {
-  background: rgba(212, 175, 55, 0.2);
-  color: #f3c262;
+  background: rgba(197, 160, 89, 0.2);
+  color: #dfba56;
 }
 
 :root[data-theme="dark"] .theme-toggle-switch .theme-toggle-label,
 .dark .theme-toggle-switch .theme-toggle-label,
 .theme-toggle-switch.is-dark .theme-toggle-label {
-  color: #f3c262;
+  color: #dfba56;
 }
 
 /* Light Mode Appearance (Offers switch to Dark Mode) */
@@ -1056,22 +1108,21 @@ a {
 }
 
 /* Dark Mode: Luxury Gold on Obsidian */
-:root,
 :root[data-theme="dark"] .rm-pill-button,
 .dark .rm-pill-button {
-  background: #d4af37;
+  background: linear-gradient(135deg, #dfba56 0%, #c59b27 50%, #9e7819 100%);
   color: #09090b;
-  border: 1.5px solid #f3c262;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(223, 186, 86, 0.6);
+  box-shadow: 0 4px 14px rgba(197, 160, 89, 0.35);
 }
 
 :root[data-theme="dark"] .rm-pill-button:hover,
 .dark .rm-pill-button:hover {
-  background: #f3c262;
+  background: linear-gradient(135deg, #f0cf6f 0%, #dfba56 50%, #b88d22 100%);
   color: #000000;
-  border-color: #fde047;
+  border-color: #dfba56;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+  box-shadow: 0 6px 20px rgba(223, 186, 86, 0.45);
 }
 
 /* Light Mode: Favicon Crimson Outline Pill Button */
@@ -1338,28 +1389,27 @@ a {
 }
 
 /* Dark Mode: Pure Black & Gold Theme */
-:root,
 :root[data-theme="dark"] .rm-universe-pill,
 .dark .rm-universe-pill {
   background: #111114;
   color: #f4f4f7;
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 :root[data-theme="dark"] .rm-universe-pill:hover,
 .dark .rm-universe-pill:hover {
-  border-color: #d4af37;
+  border-color: #c5a059;
   background: #18181d;
-  color: #f3c262;
+  color: #dfba56;
 }
 
 :root[data-theme="dark"] .rm-universe-pill.active,
 .dark .rm-universe-pill.active {
-  background: #d4af37;
+  background: linear-gradient(135deg, #dfba56 0%, #c59b27 50%, #9e7819 100%);
   color: #09090b;
-  border-color: #f3c262;
+  border-color: #dfba56;
   font-weight: 800;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 10px rgba(197, 160, 89, 0.35);
 }
 
 :root[data-theme="dark"] .rm-universe-pill.active .rm-universe-icon,
@@ -1369,7 +1419,7 @@ a {
 
 :root[data-theme="dark"] .rm-universe-pill:not(.active) .rm-universe-icon,
 .dark .rm-universe-pill:not(.active) .rm-universe-icon {
-  color: #d4af37;
+  color: #dfba56;
 }
 
 /* Light Mode: Favicon Crimson Themed Universe Pill */
@@ -1851,16 +1901,16 @@ a {
 /* Dark Mode: Luxury Obsidian & Gold Badges */
 :root[data-theme="dark"] .rm-rank-badge,
 .dark .rm-rank-badge {
-  background: #d4af37;
+  background: linear-gradient(135deg, #dfba56 0%, #c59b27 100%);
   color: #09090b;
-  border: 1px solid #f3c262;
+  border: 1px solid rgba(223, 186, 86, 0.6);
 }
 
 :root[data-theme="dark"] .rm-birthday-sale-badge,
 .dark .rm-birthday-sale-badge {
   background: #18181d;
-  color: #f3c262;
-  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #dfba56;
+  border: 1px solid rgba(197, 160, 89, 0.45);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
@@ -2686,18 +2736,17 @@ a {
 }
 
 /* Dark Mode: Luxury Gold */
-:root,
 :root[data-theme="dark"] .rm-add-cart-btn,
 .dark .rm-add-cart-btn {
-  background: #d4af37;
+  background: linear-gradient(135deg, #dfba56 0%, #c59b27 50%, #9e7819 100%);
   color: #09090b;
-  border: 1px solid #f3c262;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(223, 186, 86, 0.6);
+  box-shadow: 0 2px 10px rgba(197, 160, 89, 0.35);
 }
 
 :root[data-theme="dark"] .rm-add-cart-btn:hover:not(:disabled),
 .dark .rm-add-cart-btn:hover:not(:disabled) {
-  background: #f3c262;
+  background: linear-gradient(135deg, #f0cf6f 0%, #dfba56 50%, #b88d22 100%);
   color: #000000;
   transform: translateY(-1px);
 }
@@ -4373,8 +4422,40 @@ a {
 .ai-assistant-fab {
   bottom: 82px;
   background: var(--accent);
-  color: #ffffff;
+  color: #09090b;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+:root[data-theme="dark"] .ai-assistant-fab,
+.dark .ai-assistant-fab {
+  background: linear-gradient(135deg, #dfba56 0%, #c59b27 50%, #9e7819 100%);
+  color: #09090b;
+  border: 1px solid rgba(223, 186, 86, 0.6);
+  box-shadow: 0 4px 16px rgba(197, 160, 89, 0.35);
+}
+
+:root[data-theme="dark"] .live-chat-fab,
+.dark .live-chat-fab {
+  background: #111114;
+  color: #dfba56;
+  border: 1px solid rgba(197, 160, 89, 0.45);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="light"] .ai-assistant-fab,
+.light .ai-assistant-fab {
+  background: #dc2626;
+  color: #ffffff;
+  border: 1px solid #b91c1c;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+}
+
+:root[data-theme="light"] .live-chat-fab,
+.light .live-chat-fab {
+  background: #ffffff;
+  color: #dc2626;
+  border: 1.5px solid rgba(220, 38, 38, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .live-chat-fab:hover, .ai-assistant-fab:hover {
@@ -4844,10 +4925,10 @@ a {
 :root[data-theme="dark"] .auth-role-tab.active,
 .dark .login-role-tab.active,
 .dark .auth-role-tab.active {
-  background: #d4af37;
+  background: linear-gradient(135deg, #dfba56 0%, #c59b27 100%);
   color: #09090b;
-  border: 1px solid #f3c262;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(223, 186, 86, 0.6);
+  box-shadow: 0 2px 8px rgba(197, 160, 89, 0.35);
   font-weight: 800;
 }
 
@@ -6393,11 +6474,19 @@ a {
   }
 
   .live-chat-fab {
-    bottom: 120px;
+    bottom: 74px;
+    right: 14px;
+    height: 40px;
+    padding: 0 14px;
+    font-size: 12px;
   }
 
   .ai-assistant-fab {
-    bottom: 176px;
+    bottom: 122px;
+    right: 14px;
+    height: 40px;
+    padding: 0 14px;
+    font-size: 12px;
   }
 }
 

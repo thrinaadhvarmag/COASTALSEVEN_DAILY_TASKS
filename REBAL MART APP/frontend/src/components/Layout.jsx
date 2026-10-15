@@ -645,6 +645,12 @@ export default function Layout({ children }) {
             end={to === "/" || to === "/admin"}
             className={({ isActive }) => `mobile-bottom-link${isActive ? " active" : ""}`}
             aria-label={label}
+            onClick={() => {
+              closeMenus();
+              window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+              document.documentElement.scrollTo({ top: 0, left: 0, behavior: "instant" });
+              document.body.scrollTo({ top: 0, left: 0, behavior: "instant" });
+            }}
           >
             <span className="bottom-icon-wrap">
               <Icon size={20} />
