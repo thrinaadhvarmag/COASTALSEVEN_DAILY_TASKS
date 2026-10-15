@@ -1,4 +1,12 @@
-export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const isLocalhost = typeof window !== "undefined" && (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+);
+
+export const API_URL = (
+    import.meta.env.VITE_API_URL ||
+    (isLocalhost ? "http://localhost:8000" : "https://rebel-mart-api.onrender.com")
+).replace(/\/$/, "");
 export const money = (value) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(Number(value || 0));
 export const imageUrl = (value) => {
     if (!value) return "";

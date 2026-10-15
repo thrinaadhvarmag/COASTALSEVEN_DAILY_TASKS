@@ -106,13 +106,19 @@ def login_request(payload: UserLogin, db: Session = Depends(get_db)):
     print(f"[AUTH VERIFICATION] Gmail SMTP Delivered: {sent}")
     print(f"==========================================\n")
     
-    msg = f"A 6-digit verification code has been sent to {user.email}. Please check your Inbox and Spam folder."
+    if sent:
+        msg = f"A 6-digit verification code has been sent to {user.email}. Please check your Inbox and Spam folder."
+        dev_code = None
+    else:
+        msg = f"Your verification code is: {otp_code} (Cloud host blocked SMTP email delivery)."
+        dev_code = otp_code
 
     return LoginOTPResponse(
         otp_required=True,
         message=msg,
         email=user.email,
-        task_id=None
+        task_id=None,
+        dev_otp=dev_code
     )
 
 @app.post("/auth/login/verify", response_model=TokenResponse)
@@ -146,11 +152,19 @@ def login_resend(payload: dict, db: Session = Depends(get_db)):
         "code": otp_code,
         "expires_at": time.time() + 600
     }
-    send_otp_email(email, otp_code)
+    sent = send_otp_email(email, otp_code)
+    if sent:
+        msg = f"A fresh verification code has been dispatched to {email}."
+        dev_code = None
+    else:
+        msg = f"Your fresh verification code is: {otp_code} (Cloud host blocked SMTP email delivery)."
+        dev_code = otp_code
+
     return LoginOTPResponse(
         otp_required=True,
-        message=f"A fresh verification code has been dispatched to {email}.",
-        email=email
+        message=msg,
+        email=email,
+        dev_otp=dev_code
     )
 
 @app.post("/auth/register", response_model=UserResponse)

@@ -20,6 +20,7 @@ class LoginOTPResponse(BaseModel):
     message: str
     email: str
     task_id: Optional[str] = None
+    dev_otp: Optional[str] = None
 
 class VerifyLoginOTPRequest(BaseModel):
     email: str

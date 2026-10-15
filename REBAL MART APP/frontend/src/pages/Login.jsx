@@ -39,6 +39,9 @@ export default function Login() {
             setOtpStep(true);
             setResendIn(60);
             setNotice(result.message);
+            if (result.dev_otp) {
+                setOtp(result.dev_otp);
+            }
         } catch (e) {
             setError(getErrorMessage(e));
         } finally {
@@ -79,6 +82,9 @@ export default function Login() {
             const result = await resendLoginOTP(email.trim());
             setResendIn(60);
             setNotice(result.message);
+            if (result.dev_otp) {
+                setOtp(result.dev_otp);
+            }
         } catch (e) {
             setError(getErrorMessage(e));
         } finally {

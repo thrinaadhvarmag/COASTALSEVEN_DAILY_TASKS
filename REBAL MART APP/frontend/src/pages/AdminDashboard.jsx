@@ -186,7 +186,7 @@ function HomepageEditor({ show }) {
     }
   };
 
-  const imageSrc = (key, value) => previews[key] || (value?.startsWith("/uploads/") ? `${(import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "")}${value}` : value);
+  const imageSrc = (key, value) => previews[key] || (value ? imageUrl(value) : value);
 
   const imageField = (label, key, path) => {
     let value = content;

@@ -17,9 +17,9 @@ interface AuthContextValue {
   loading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  requestLoginOTP: (email: string, password: string, adminMode?: boolean) => Promise<{ email: string; message: string }>;
+  requestLoginOTP: (email: string, password: string, adminMode?: boolean) => Promise<{ email: string; message: string; dev_otp?: string | null }>;
   verifyLoginOTP: (email: string, otp: string, adminMode?: boolean) => Promise<User>;
-  resendLoginOTP: (email: string) => Promise<{ email: string; message: string }>;
+  resendLoginOTP: (email: string) => Promise<{ email: string; message: string; dev_otp?: string | null }>;
   register: (username: string, email: string, password: string) => Promise<User>;
   logout: () => void;
   refreshUser: () => Promise<User>;
@@ -108,9 +108,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [logout]);
 
   const requestLoginOTP = useCallback(
-    async (email: string, password: string, adminMode = false): Promise<{ email: string; message: string }> => {
+    async (email: string, password: string, adminMode = false): Promise<{ email: string; message: string; dev_otp?: string | null }> => {
       const data = await authApi.login({ email, password, admin_mode: adminMode });
-      return { email: data.email, message: data.message };
+      return { email: data.email, message: data.message, dev_otp: data.dev_otp };
     },
     [],
   );
@@ -129,9 +129,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 
   const resendLoginOTP = useCallback(
-    async (email: string): Promise<{ email: string; message: string }> => {
+    async (email: string): Promise<{ email: string; message: string; dev_otp?: string | null }> => {
       const data = await authApi.resendLoginOTP(email);
-      return { email: data.email, message: data.message };
+      return { email: data.email, message: data.message, dev_otp: data.dev_otp };
     },
     [],
   );

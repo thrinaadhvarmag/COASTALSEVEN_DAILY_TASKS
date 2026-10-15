@@ -18,39 +18,52 @@ SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "Rebel Mart")
 
 def send_email(to_email: str, subject: str, text_content: str, html_content: str = None) -> bool:
     """
-    Sends an email using configured SMTP host with TLS encryption.
-    Includes proper RFC-compliant headers (Date, Message-ID, Reply-To) to avoid spam filters.
+    Sends an email using configured SMTP host with TLS/SSL encryption.
+    Tries primary port (587 STARTTLS) and fallback port (465 SSL) with short timeouts.
     """
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"{SMTP_FROM_NAME} <{SMTP_FROM_EMAIL}>"
+    msg["To"] = to_email
+    msg["Date"] = email.utils.formatdate(localtime=True)
+    msg["Message-ID"] = email.utils.make_msgid(domain="gmail.com")
+    msg["Reply-To"] = SMTP_FROM_EMAIL
+
+    # Attach plain text
+    part1 = MIMEText(text_content, "plain", "utf-8")
+    msg.attach(part1)
+
+    # Attach HTML if provided
+    if html_content:
+        part2 = MIMEText(html_content, "html", "utf-8")
+        msg.attach(part2)
+
+    # Attempt 1: Port 587 with STARTTLS
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"{SMTP_FROM_NAME} <{SMTP_FROM_EMAIL}>"
-        msg["To"] = to_email
-        msg["Date"] = email.utils.formatdate(localtime=True)
-        msg["Message-ID"] = email.utils.make_msgid(domain="gmail.com")
-        msg["Reply-To"] = SMTP_FROM_EMAIL
-
-        # Attach plain text
-        part1 = MIMEText(text_content, "plain", "utf-8")
-        msg.attach(part1)
-
-        # Attach HTML if provided
-        if html_content:
-            part2 = MIMEText(html_content, "html", "utf-8")
-            msg.attach(part2)
-
-        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=12)
+        server = smtplib.SMTP(SMTP_HOST, 587, timeout=4)
         server.ehlo()
         server.starttls()
         server.ehlo()
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.sendmail(SMTP_FROM_EMAIL, [to_email], msg.as_string())
         server.quit()
-        print(f"[SMTP] Successfully sent email to {to_email} (Subject: {subject})")
+        print(f"[SMTP] Successfully sent email to {to_email} via port 587")
         return True
-    except Exception as e:
-        print(f"[SMTP ERROR] Could not send email to {to_email}: {e}")
-        return False
+    except Exception as e587:
+        print(f"[SMTP NOTICE] Port 587 failed: {e587}. Trying port 465 SSL...")
+
+    # Attempt 2: Port 465 with SSL
+    try:
+        server = smtplib.SMTP_SSL(SMTP_HOST, 465, timeout=4)
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.sendmail(SMTP_FROM_EMAIL, [to_email], msg.as_string())
+        server.quit()
+        print(f"[SMTP] Successfully sent email to {to_email} via port 465")
+        return True
+    except Exception as e465:
+        print(f"[SMTP NOTICE] Port 465 failed: {e465}. Cloud host likely blocks outbound SMTP.")
+
+    return False
 
 def send_otp_email(to_email: str, otp_code: str) -> bool:
     subject = f"Your Rebel Mart Verification Code: {otp_code}"

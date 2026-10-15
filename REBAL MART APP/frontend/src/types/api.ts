@@ -59,6 +59,7 @@ export interface LoginOTPRequiredResponse {
     message: string;
     email: string;
     task_id: string | null;
+    dev_otp?: string | null;
 }
 export interface VerifyLoginOTPRequest {
     email: string;
