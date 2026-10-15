@@ -128,24 +128,29 @@ def seed_database():
     Base.metadata.create_all(bind=engine)
     db: Session = SessionLocal()
     try:
-        # 1. Primary Administrator Account
-        admin_email = "gunjethrinaadhvarma999@gmail.com"
-        admin = db.query(User).filter(User.email == admin_email).first()
-        if not admin:
-            admin = User(
-                username="ThrinaadhAdmin",
-                email=admin_email,
-                hashed_password=get_password_hash("Admin@123456"),
-                role="admin",
-                profile_image_url=None,
-                email_verified=True
-            )
-            db.add(admin)
-        else:
-            admin.hashed_password = get_password_hash("Admin@123456")
-            admin.role = "admin"
-            admin.email_verified = True
-        db.commit()
+        # 1. Primary Administrator Accounts
+        for admin_email in ["thrinaadhvarma999@gmail.com", "gunjethrinaadhvarma999@gmail.com"]:
+            admin = db.query(User).filter(User.email == admin_email).first()
+            username = "Thrinaadh" if "gunje" not in admin_email else "GunjeThrinaadh"
+            if not admin:
+                # Also check if username exists to prevent conflicts
+                existing_uname = db.query(User).filter(User.username == username).first()
+                if existing_uname:
+                    username = f"{username}_{random.randint(100, 999)}"
+                admin = User(
+                    username=username,
+                    email=admin_email,
+                    hashed_password=get_password_hash("Admin@123456"),
+                    role="admin",
+                    profile_image_url=None,
+                    email_verified=True
+                )
+                db.add(admin)
+            else:
+                admin.hashed_password = get_password_hash("Admin@123456")
+                admin.role = "admin"
+                admin.email_verified = True
+            db.commit()
 
         # Secondary demo admin
         demo_admin = db.query(User).filter(User.email == "admin@rebelmart.com").first()

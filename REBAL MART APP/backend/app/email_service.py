@@ -9,6 +9,12 @@ from dotenv import load_dotenv
 env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
 load_dotenv(env_path)
 
+import json
+import urllib.request
+
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "Rebel Mart <onboarding@resend.dev>")
+
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "thrinaadhvarma999@gmail.com")
@@ -16,11 +22,55 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "nzssoeubvjrvqqbk")
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
 SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "Rebel Mart")
 
+def send_via_resend(to_email: str, subject: str, html_content: str, text_content: str) -> bool:
+    """
+    Sends email over HTTPS (Port 443) via Resend REST API.
+    100% cloud host compatible — never blocked by Render, Vercel, or AWS.
+    """
+    if not RESEND_API_KEY:
+        return False
+    try:
+        payload = {
+            "from": RESEND_FROM_EMAIL,
+            "to": [to_email],
+            "subject": subject,
+            "html": html_content or f"<pre>{text_content}</pre>",
+            "text": text_content
+        }
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            "https://api.resend.com/emails",
+            data=data,
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json",
+                "User-Agent": "RebelMartApp/1.0"
+            },
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            resp_body = resp.read().decode("utf-8")
+            print(f"[RESEND SUCCESS] Email delivered to {to_email}: {resp_body}")
+            return True
+    except urllib.error.HTTPError as e:
+        err_msg = e.read().decode("utf-8")
+        print(f"[RESEND NOTICE] {e.code}: {err_msg}")
+        return False
+    except Exception as e:
+        print(f"[RESEND ERROR] Failed to send via Resend: {e}")
+        return False
+
 def send_email(to_email: str, subject: str, text_content: str, html_content: str = None) -> bool:
     """
-    Sends an email using configured SMTP host with TLS/SSL encryption.
-    Tries primary port (587 STARTTLS) and fallback port (465 SSL) with short timeouts.
+    Sends an email:
+    1. First tries Resend HTTPS REST API (Port 443, instant, cloud-friendly).
+    2. Falls back to direct SMTP with STARTTLS (port 587) and SSL (port 465).
     """
+    # Strategy 1: Resend HTTPS API (Port 443)
+    if send_via_resend(to_email, subject, html_content, text_content):
+        return True
+
+    # Strategy 2: Direct SMTP Fallback
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = f"{SMTP_FROM_NAME} <{SMTP_FROM_EMAIL}>"
@@ -40,7 +90,7 @@ def send_email(to_email: str, subject: str, text_content: str, html_content: str
 
     # Attempt 1: Port 587 with STARTTLS
     try:
-        server = smtplib.SMTP(SMTP_HOST, 587, timeout=4)
+        server = smtplib.SMTP(SMTP_HOST, 587, timeout=3)
         server.ehlo()
         server.starttls()
         server.ehlo()
@@ -50,18 +100,18 @@ def send_email(to_email: str, subject: str, text_content: str, html_content: str
         print(f"[SMTP] Successfully sent email to {to_email} via port 587")
         return True
     except Exception as e587:
-        print(f"[SMTP NOTICE] Port 587 failed: {e587}. Trying port 465 SSL...")
+        pass
 
     # Attempt 2: Port 465 with SSL
     try:
-        server = smtplib.SMTP_SSL(SMTP_HOST, 465, timeout=4)
+        server = smtplib.SMTP_SSL(SMTP_HOST, 465, timeout=3)
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.sendmail(SMTP_FROM_EMAIL, [to_email], msg.as_string())
         server.quit()
         print(f"[SMTP] Successfully sent email to {to_email} via port 465")
         return True
     except Exception as e465:
-        print(f"[SMTP NOTICE] Port 465 failed: {e465}. Cloud host likely blocks outbound SMTP.")
+        pass
 
     return False
 
