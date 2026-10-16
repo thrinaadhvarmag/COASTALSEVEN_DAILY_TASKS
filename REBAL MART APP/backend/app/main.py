@@ -63,9 +63,76 @@ app.add_middleware(
 # Mount uploads static files
 app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
+import subprocess
+import sys
+import threading
+
+CELERY_WORKER_PROCESS = None
+
+def start_embedded_celery_worker():
+    global CELERY_WORKER_PROCESS
+    # If disabled by environment (e.g. start.sh or standalone worker container), skip
+    if os.getenv("DISABLE_EMBEDDED_CELERY", "false").lower() in ("true", "1", "yes"):
+        print("[CELERY SUPERVISOR] Embedded Celery worker disabled by DISABLE_EMBEDDED_CELERY.")
+        return
+
+    # Skip if already running
+    if CELERY_WORKER_PROCESS and CELERY_WORKER_PROCESS.poll() is None:
+        print("[CELERY SUPERVISOR] Worker process already running.")
+        return
+
+    try:
+        cmd = [sys.executable, "-m", "celery", "-A", "app.celery_app.celery", "worker", "--loglevel=info"]
+        if os.name == "nt":
+            cmd.extend(["-P", "solo"])
+        else:
+            cmd.extend(["--concurrency", "2"])
+
+        print(f"[CELERY SUPERVISOR] Spawning embedded Celery worker: {' '.join(cmd)}")
+        CELERY_WORKER_PROCESS = subprocess.Popen(
+            cmd,
+            cwd=BASE_DIR,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1
+        )
+
+        def log_stream():
+            if CELERY_WORKER_PROCESS and CELERY_WORKER_PROCESS.stdout:
+                for line in CELERY_WORKER_PROCESS.stdout:
+                    clean = line.strip()
+                    if clean:
+                        print(f"[CELERY] {clean}", flush=True)
+
+        t = threading.Thread(target=log_stream, daemon=True)
+        t.start()
+        print(f"[CELERY SUPERVISOR] Celery worker started with PID {CELERY_WORKER_PROCESS.pid}")
+    except Exception as exc:
+        print(f"[CELERY SUPERVISOR ERROR] Failed to start Celery worker: {exc}")
+
+def stop_embedded_celery_worker():
+    global CELERY_WORKER_PROCESS
+    if CELERY_WORKER_PROCESS and CELERY_WORKER_PROCESS.poll() is None:
+        print("[CELERY SUPERVISOR] Stopping embedded Celery worker...")
+        try:
+            CELERY_WORKER_PROCESS.terminate()
+            CELERY_WORKER_PROCESS.wait(timeout=3)
+        except Exception:
+            try:
+                CELERY_WORKER_PROCESS.kill()
+            except Exception:
+                pass
+        CELERY_WORKER_PROCESS = None
+
 @app.on_event("startup")
 def on_startup():
     seed_database()
+    start_embedded_celery_worker()
+
+@app.on_event("shutdown")
+def on_shutdown():
+    stop_embedded_celery_worker()
 
 # ==========================================
 # 1. AUTHENTICATION & PROFILE
@@ -92,20 +159,17 @@ def login_request(payload: UserLogin, db: Session = Depends(get_db)):
         "expires_at": time.time() + 600  # 10 minute expiry
     }
 
-    # Dispatch via Celery async queue & direct email service
+    # Dispatch OTP verification email via Celery async worker (with direct fallback)
     try:
         from app.celery_app import send_verification_email
         send_verification_email.delay(user.email, otp_code)
-        print(f"[CELERY QUEUED] OTP email queued for {user.email}")
+        print(f"[CELERY QUEUED] OTP verification email queued for {user.email}")
     except Exception as exc:
-        print(f"[CELERY NOTICE] Celery async queue not active: {exc}")
-
-    sent = send_otp_email(user.email, otp_code)
-
-    print(f"\n==========================================")
-    print(f"[AUTH VERIFICATION] User: {user.email}")
-    print(f"[AUTH VERIFICATION] Dispatched Status: {sent}")
-    print(f"==========================================\n")
+        print(f"[CELERY NOTICE] Celery async queue unavailable: {exc}. Dispatching direct email.")
+        try:
+            send_otp_email(user.email, otp_code)
+        except Exception as mail_err:
+            print(f"[EMAIL ERROR] Direct fallback email failed: {mail_err}")
     
     msg = f"A 6-digit verification code has been sent to {user.email}. Please check your Inbox and Spam folder."
 
@@ -148,15 +212,18 @@ def login_resend(payload: dict, db: Session = Depends(get_db)):
         "code": otp_code,
         "expires_at": time.time() + 600
     }
-    # Dispatch via Celery async queue & direct email service
+    # Dispatch via Celery async queue (with direct fallback)
     try:
         from app.celery_app import send_verification_email
         send_verification_email.delay(email, otp_code)
-        print(f"[CELERY QUEUED] Fresh OTP email queued for {email}")
+        print(f"[CELERY QUEUED] Fresh OTP verification email queued for {email}")
     except Exception as exc:
-        print(f"[CELERY NOTICE] Celery async queue not active: {exc}")
+        print(f"[CELERY NOTICE] Celery async queue unavailable: {exc}. Dispatching direct email.")
+        try:
+            send_otp_email(email, otp_code)
+        except Exception as mail_err:
+            print(f"[EMAIL ERROR] Direct fallback email failed: {mail_err}")
 
-    sent = send_otp_email(email, otp_code)
     msg = f"A fresh 6-digit verification code has been sent to {email}. Please check your Inbox and Spam folder."
 
     return LoginOTPResponse(

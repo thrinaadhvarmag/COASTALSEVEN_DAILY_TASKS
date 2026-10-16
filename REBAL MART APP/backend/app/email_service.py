@@ -22,11 +22,15 @@ SMTP_USER = os.getenv("SMTP_USER", "thrinaadhvarma999@gmail.com")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "nzssoeubvjrvqqbk")
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
 SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "Rebel Mart")
+RESEND_SANDBOX_EMAIL = os.getenv("RESEND_SANDBOX_EMAIL", "thrinaadhvarma999@gmail.com")
 
-def send_via_resend(to_email: str, subject: str, html_content: str, text_content: str) -> bool:
+def send_via_resend(to_email: str, subject: str, html_content: str, text_content: str, is_sandbox_forward: bool = False) -> bool:
     """
     Sends email over HTTPS (Port 443) via Resend REST API.
     100% cloud host compatible — never blocked by Render, Vercel, or AWS.
+    If the recipient is rejected because Resend is currently using onboarding@resend.dev
+    (which only permits sending to the verified developer account), it automatically forwards
+    the verification / order email to RESEND_SANDBOX_EMAIL so testing never gets blocked!
     """
     if not RESEND_API_KEY:
         return False
@@ -49,13 +53,37 @@ def send_via_resend(to_email: str, subject: str, html_content: str, text_content
             },
             method="POST"
         )
-        with urllib.request.urlopen(req, timeout=5) as resp:
+        with urllib.request.urlopen(req, timeout=8) as resp:
             resp_body = resp.read().decode("utf-8")
             print(f"[RESEND SUCCESS] Email delivered to {to_email}: {resp_body}")
             return True
     except urllib.error.HTTPError as e:
         err_msg = e.read().decode("utf-8")
         print(f"[RESEND NOTICE] Status {e.code}: {err_msg}")
+        
+        # Handle Resend trial sandbox restriction gracefully:
+        # onboarding@resend.dev only allows sending to the account owner.
+        # If the recipient is different and we haven't forwarded yet, route to RESEND_SANDBOX_EMAIL.
+        if (
+            e.code == 403 
+            and not is_sandbox_forward
+            and ("only send testing emails to your own email address" in err_msg or "resend.com/domains" in err_msg)
+        ):
+            target = RESEND_SANDBOX_EMAIL.strip().lower()
+            if to_email.strip().lower() != target:
+                print(f"[RESEND SANDBOX NOTICE] onboarding@resend.dev cannot send directly to {to_email} without a custom verified domain. Forwarding to verified developer email: {target}")
+                forward_subject = f"[Sandbox for {to_email}] {subject}"
+                sandbox_banner = f"""
+                <div style="background: #fffbeb; border: 2px solid #f59e0b; border-radius: 8px; padding: 14px; margin-bottom: 20px; font-family: sans-serif; font-size: 13px; color: #92400e;">
+                  <strong>⚡ Resend Sandbox Mode Active:</strong><br>
+                  This email was requested for <strong>{to_email}</strong>.<br>
+                  Because Resend is currently in trial mode (<code>onboarding@resend.dev</code>), it routes test emails to your verified account (<code>{target}</code>).<br>
+                  <small style="color: #78350f;">To send directly to customer inboxes in production, add and verify your custom domain at <a href="https://resend.com/domains" style="color: #b45309; font-weight: bold;">resend.com/domains</a>.</small>
+                </div>
+                """
+                forward_html = f"{sandbox_banner}{html_content}" if html_content else f"<p>Requested for: {to_email}</p><pre>{text_content}</pre>"
+                forward_text = f"[RESEND SANDBOX NOTICE: Requested for {to_email}]\n\n{text_content}"
+                return send_via_resend(target, forward_subject, forward_html, forward_text, is_sandbox_forward=True)
         return False
     except Exception as e:
         print(f"[RESEND ERROR] Failed to send via Resend: {e}")

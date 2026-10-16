@@ -4,7 +4,7 @@ services:
     runtime: python
     rootDir: REBAL MART APP/backend
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: bash start.sh
     plan: free
     envVars:
       - key: PYTHON_VERSION
@@ -14,4 +14,26 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        value: Rebel Mart <onboarding@resend.dev>
+      - key: RESEND_SANDBOX_EMAIL
+        value: thrinaadhvarma999@gmail.com
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        value: thrinaadhvarma999@gmail.com
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_EMAIL
+        value: thrinaadhvarma999@gmail.com
+      - key: SMTP_FROM_NAME
+        value: Rebel Mart
+      - key: CELERY_BROKER_URL
+        sync: false
+      - key: REDIS_URL
         sync: false

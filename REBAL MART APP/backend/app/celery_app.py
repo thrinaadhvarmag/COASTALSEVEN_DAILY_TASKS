@@ -15,8 +15,8 @@ def is_redis_available(host="localhost", port=6379):
     except (socket.timeout, ConnectionRefusedError, OSError):
         return False
 
-# Determine broker: explicit env var > local Redis > local SQLite DB broker (Windows compatible)
-custom_broker = os.getenv("CELERY_BROKER_URL")
+# Determine broker: explicit env var > REDIS_URL > local Redis > local SQLite DB broker (Windows compatible)
+custom_broker = os.getenv("CELERY_BROKER_URL") or os.getenv("REDIS_URL")
 if custom_broker:
     BROKER_URL = custom_broker
     RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", custom_broker)
@@ -43,6 +43,7 @@ celery.conf.update(
     enable_utc=True,
     task_track_started=True,
     worker_prefetch_multiplier=1,
+    broker_connection_retry_on_startup=True,
 )
 
 @celery.task(bind=True, name="app.celery_app.generate_order_invoice")
