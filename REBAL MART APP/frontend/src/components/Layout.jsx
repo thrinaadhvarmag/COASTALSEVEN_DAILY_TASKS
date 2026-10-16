@@ -247,13 +247,36 @@ export default function Layout({ children }) {
       {/* Top Cinema Ticker */}
       {!isAdmin && (
         <aside className="store-announcement" aria-label="Announcement">
-          <div className="ticker-content">
+          {/* Desktop Static Ticker */}
+          <div className="ticker-content desktop-ticker">
             <span className="badge-pill">🔥 PRABHAS BIRTHDAY SALE</span>
             <span>FLAT 23% OFF STOREWIDE · CODE: <strong>WELCOME10</strong> FOR EXTRA 10% OFF</span>
             <span className="badge-pill">🚚 FREE SHIPPING</span>
             <span>ON ORDERS OVER ₹999 ACROSS INDIA</span>
           </div>
-          <Link to="/offers" onClick={closeMenus}>View All Offers →</Link>
+
+          {/* Mobile Continuous Smooth Marquee Ticker */}
+          <Link to="/offers" onClick={closeMenus} className="mobile-ticker-marquee-link" aria-label="View Prabhas birthday sale offers">
+            <div className="mobile-ticker-marquee">
+              <div className="mobile-ticker-track">
+                <span className="badge-pill">🔥 PRABHAS BIRTHDAY SALE</span>
+                <span className="ticker-text">FLAT 23% OFF STOREWIDE</span>
+                <span className="ticker-bullet">•</span>
+                <span className="ticker-text">USE CODE: <strong>WELCOME10</strong></span>
+                <span className="ticker-bullet">•</span>
+                <span className="ticker-text">🚚 FREE SHIPPING OVER ₹999</span>
+                <span className="ticker-bullet">•</span>
+                <span className="badge-pill">🔥 PRABHAS BIRTHDAY SALE</span>
+                <span className="ticker-text">FLAT 23% OFF STOREWIDE</span>
+                <span className="ticker-bullet">•</span>
+                <span className="ticker-text">USE CODE: <strong>WELCOME10</strong></span>
+                <span className="ticker-bullet">•</span>
+                <span className="ticker-text">🚚 FREE SHIPPING OVER ₹999</span>
+              </div>
+            </div>
+          </Link>
+
+          <Link to="/offers" onClick={closeMenus} className="desktop-offers-link">View All Offers →</Link>
         </aside>
       )}
 

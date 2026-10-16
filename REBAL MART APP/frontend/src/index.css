@@ -538,7 +538,7 @@ a {
   color: #991b1b;
 }
 
-.store-announcement .ticker-content {
+.store-announcement .desktop-ticker {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -568,7 +568,7 @@ a {
   border: 1px solid #b91c1c;
 }
 
-.store-announcement a {
+.store-announcement .desktop-offers-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -576,41 +576,80 @@ a {
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
+  flex-shrink: 0;
+}
+
+.mobile-ticker-marquee-link {
+  display: none;
 }
 
 @media (max-width: 768px) {
   .store-announcement {
-    padding: 6px 12px;
-    font-size: 11px;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: nowrap;
-    overflow-x: hidden;
-    min-height: auto;
+    padding: 0 !important;
+    height: 36px !important;
+    min-height: 36px !important;
     width: 100% !important;
     max-width: 100vw !important;
     box-sizing: border-box !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
   }
-  .store-announcement .ticker-content {
-    gap: 8px;
-    flex-wrap: nowrap;
-    align-items: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .store-announcement .ticker-content span:nth-child(2) {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .store-announcement .ticker-content span:nth-child(3),
-  .store-announcement .ticker-content span:nth-child(4) {
+  .store-announcement .desktop-ticker,
+  .store-announcement .desktop-offers-link {
     display: none !important;
   }
-  .store-announcement a {
-    display: none !important;
+  .mobile-ticker-marquee-link {
+    display: flex !important;
+    width: 100% !important;
+    height: 100% !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    color: inherit !important;
+    overflow: hidden !important;
+  }
+  .mobile-ticker-marquee {
+    display: flex !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    mask-image: linear-gradient(90deg, transparent 0%, black 14px, black calc(100% - 14px), transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 14px, black calc(100% - 14px), transparent 100%);
+  }
+  .mobile-ticker-track {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    will-change: transform !important;
+    animation: mobileTickerMarquee 22s linear infinite !important;
+    padding-left: 10px !important;
+  }
+  .mobile-ticker-track:hover,
+  .mobile-ticker-track:active {
+    animation-play-state: paused !important;
+  }
+  .ticker-bullet {
+    opacity: 0.5;
+    font-size: 8px;
+  }
+  .mobile-ticker-track .badge-pill {
+    padding: 2.5px 8px !important;
+    font-size: 9.5px !important;
+  }
+  .mobile-ticker-track .ticker-text {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+  }
+}
+
+@keyframes mobileTickerMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
   }
 }
 
@@ -5723,6 +5762,133 @@ a {
     transform: translateY(0);
   }
 }
+  /* Campaign Hero Carousel on Mobile: Scaled Typography, High-Contrast Solid CTA Button, Repositioned Arrows */
+  .rm-campaign {
+    height: 380px !important;
+    margin: 12px auto 0 !important;
+    width: calc(100% - 24px) !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  .rm-campaign-image {
+    object-position: center 20% !important;
+  }
+  .rm-campaign-overlay {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.72) 65%, rgba(0, 0, 0, 0.94) 100%) !important;
+  }
+  :root[data-theme="light"] .rm-campaign-overlay,
+  .light .rm-campaign-overlay {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.75) 65%, rgba(15, 23, 42, 0.95) 100%) !important;
+  }
+  .rm-campaign-copy {
+    padding: 24px 18px 24px !important;
+    max-width: 100% !important;
+    z-index: 3 !important;
+  }
+  .rm-campaign-kicker {
+    font-size: 9.5px !important;
+    padding: 4px 10px !important;
+    margin-bottom: 8px !important;
+    gap: 5px !important;
+    letter-spacing: 0.12em !important;
+  }
+  .rm-campaign-copy h1,
+  .premium-home .rm-campaign-copy h1,
+  .premium-home .premium-campaign-copy h1 {
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    line-height: 1.15 !important;
+    margin: 0 0 8px !important;
+    letter-spacing: -0.01em !important;
+    color: #ffffff !important;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8) !important;
+  }
+  .rm-campaign-copy p,
+  .premium-home .premium-campaign-copy p {
+    font-size: 12.5px !important;
+    line-height: 1.45 !important;
+    margin: 0 0 16px !important;
+    max-width: 280px !important;
+    color: #f4f4f5 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7) !important;
+  }
+  /* Mobile Campaign Button: Solid High-Contrast Crimson in Light Mode & Solid Gold in Dark Mode */
+  .rm-campaign .rm-pill-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px 22px !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    border-radius: 999px !important;
+    width: fit-content !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+  }
+  :root[data-theme="light"] .rm-campaign .rm-pill-button,
+  .light .rm-campaign .rm-pill-button {
+    background: #dc2626 !important;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #b91c1c !important;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45) !important;
+  }
+  :root[data-theme="light"] .rm-campaign .rm-pill-button *,
+  .light .rm-campaign .rm-pill-button * {
+    color: #ffffff !important;
+  }
+  :root[data-theme="dark"] .rm-campaign .rm-pill-button,
+  .dark .rm-campaign .rm-pill-button {
+    background: linear-gradient(135deg, #dfba56 0%, #c59b27 100%) !important;
+    color: #09090b !important;
+    border: 1px solid rgba(223, 186, 86, 0.8) !important;
+    box-shadow: 0 4px 16px rgba(197, 160, 89, 0.4) !important;
+  }
+  :root[data-theme="dark"] .rm-campaign .rm-pill-button *,
+  .dark .rm-campaign .rm-pill-button * {
+    color: #09090b !important;
+  }
+  /* Reposition arrows to bottom-right corner so they NEVER cover the headline or copy */
+  .rm-campaign-arrow {
+    width: 32px !important;
+    height: 32px !important;
+    top: auto !important;
+    bottom: 14px !important;
+    transform: none !important;
+    background: rgba(18, 18, 23, 0.75) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+    z-index: 5 !important;
+  }
+  .rm-campaign-arrow.rm-prev {
+    left: auto !important;
+    right: 50px !important;
+  }
+  .rm-campaign-arrow.rm-next {
+    right: 12px !important;
+  }
+  .rm-campaign-dots {
+    bottom: 22px !important;
+    left: 20px !important;
+    transform: none !important;
+    margin: 0 !important;
+    z-index: 4 !important;
+  }
+  .rm-campaign-dots button {
+    width: 7px !important;
+    height: 7px !important;
+  }
+  .rm-campaign-dots button.active {
+    width: 20px !important;
+  }
+
   .catalog-layout {
     grid-template-columns: 1fr;
   }
