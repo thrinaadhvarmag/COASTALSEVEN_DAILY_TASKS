@@ -22,15 +22,11 @@ SMTP_USER = os.getenv("SMTP_USER", "thrinaadhvarma999@gmail.com")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "nzssoeubvjrvqqbk")
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
 SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "Rebel Mart")
-RESEND_SANDBOX_EMAIL = os.getenv("RESEND_SANDBOX_EMAIL", "thrinaadhvarma999@gmail.com")
-
-def send_via_resend(to_email: str, subject: str, html_content: str, text_content: str, is_sandbox_forward: bool = False) -> bool:
+def send_via_resend(to_email: str, subject: str, html_content: str, text_content: str) -> bool:
     """
-    Sends email over HTTPS (Port 443) via Resend REST API.
+    Sends email over HTTPS (Port 443) via Resend REST API directly to the user's email address.
     100% cloud host compatible — never blocked by Render, Vercel, or AWS.
-    If the recipient is rejected because Resend is currently using onboarding@resend.dev
-    (which only permits sending to the verified developer account), it automatically forwards
-    the verification / order email to RESEND_SANDBOX_EMAIL so testing never gets blocked!
+    If the recipient domain is not yet verified on Resend, returns False to trigger SMTP fallback.
     """
     if not RESEND_API_KEY:
         return False
@@ -55,51 +51,29 @@ def send_via_resend(to_email: str, subject: str, html_content: str, text_content
         )
         with urllib.request.urlopen(req, timeout=8) as resp:
             resp_body = resp.read().decode("utf-8")
-            print(f"[RESEND SUCCESS] Email delivered to {to_email}: {resp_body}")
+            print(f"[RESEND SUCCESS] Email delivered directly to user {to_email}: {resp_body}")
             return True
     except urllib.error.HTTPError as e:
         err_msg = e.read().decode("utf-8")
-        print(f"[RESEND NOTICE] Status {e.code}: {err_msg}")
-        
-        # Handle Resend trial sandbox restriction gracefully:
-        # onboarding@resend.dev only allows sending to the account owner.
-        # If the recipient is different and we haven't forwarded yet, route to RESEND_SANDBOX_EMAIL.
-        if (
-            e.code == 403 
-            and not is_sandbox_forward
-            and ("only send testing emails to your own email address" in err_msg or "resend.com/domains" in err_msg)
-        ):
-            target = RESEND_SANDBOX_EMAIL.strip().lower()
-            if to_email.strip().lower() != target:
-                print(f"[RESEND SANDBOX NOTICE] onboarding@resend.dev cannot send directly to {to_email} without a custom verified domain. Forwarding to verified developer email: {target}")
-                forward_subject = f"[Sandbox for {to_email}] {subject}"
-                sandbox_banner = f"""
-                <div style="background: #fffbeb; border: 2px solid #f59e0b; border-radius: 8px; padding: 14px; margin-bottom: 20px; font-family: sans-serif; font-size: 13px; color: #92400e;">
-                  <strong>⚡ Resend Sandbox Mode Active:</strong><br>
-                  This email was requested for <strong>{to_email}</strong>.<br>
-                  Because Resend is currently in trial mode (<code>onboarding@resend.dev</code>), it routes test emails to your verified account (<code>{target}</code>).<br>
-                  <small style="color: #78350f;">To send directly to customer inboxes in production, add and verify your custom domain at <a href="https://resend.com/domains" style="color: #b45309; font-weight: bold;">resend.com/domains</a>.</small>
-                </div>
-                """
-                forward_html = f"{sandbox_banner}{html_content}" if html_content else f"<p>Requested for: {to_email}</p><pre>{text_content}</pre>"
-                forward_text = f"[RESEND SANDBOX NOTICE: Requested for {to_email}]\n\n{text_content}"
-                return send_via_resend(target, forward_subject, forward_html, forward_text, is_sandbox_forward=True)
+        print(f"[RESEND NOTICE] Status {e.code} for recipient {to_email}: {err_msg}")
         return False
     except Exception as e:
-        print(f"[RESEND ERROR] Failed to send via Resend: {e}")
+        print(f"[RESEND ERROR] Failed to send to {to_email} via Resend: {e}")
         return False
 
 def send_email(to_email: str, subject: str, text_content: str, html_content: str = None) -> bool:
     """
-    Sends an email:
+    Sends an email directly to the recipient user:
     1. First tries Resend HTTPS REST API (Port 443, instant, cloud-friendly).
-    2. Falls back to direct SMTP with STARTTLS (port 587) and SSL (port 465).
+    2. Falls back to direct Gmail SMTP with STARTTLS (port 587) and SSL (port 465).
+    Guarantees the email goes strictly to the customer's registered email address.
     """
     # Strategy 1: Resend HTTPS API (Port 443)
     if send_via_resend(to_email, subject, html_content, text_content):
         return True
 
-    # Strategy 2: Direct SMTP Fallback
+    # Strategy 2: Direct SMTP to User's Email
+    print(f"[SMTP FALLBACK] Resend unavailable for {to_email}. Connecting to Gmail SMTP for direct delivery...")
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = f"{SMTP_FROM_NAME} <{SMTP_FROM_EMAIL}>"
@@ -119,29 +93,30 @@ def send_email(to_email: str, subject: str, text_content: str, html_content: str
 
     # Attempt 1: Port 587 with STARTTLS
     try:
-        server = smtplib.SMTP(SMTP_HOST, 587, timeout=3)
+        server = smtplib.SMTP(SMTP_HOST, 587, timeout=12)
         server.ehlo()
         server.starttls()
         server.ehlo()
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.sendmail(SMTP_FROM_EMAIL, [to_email], msg.as_string())
         server.quit()
-        print(f"[SMTP] Successfully sent email to {to_email} via port 587")
+        print(f"[SMTP SUCCESS] Successfully delivered email directly to user {to_email} via port 587")
         return True
     except Exception as e587:
-        pass
+        print(f"[SMTP NOTICE] Port 587 attempt failed for {to_email}: {e587}")
 
     # Attempt 2: Port 465 with SSL
     try:
-        server = smtplib.SMTP_SSL(SMTP_HOST, 465, timeout=3)
+        server = smtplib.SMTP_SSL(SMTP_HOST, 465, timeout=12)
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.sendmail(SMTP_FROM_EMAIL, [to_email], msg.as_string())
         server.quit()
-        print(f"[SMTP] Successfully sent email to {to_email} via port 465")
+        print(f"[SMTP SUCCESS] Successfully delivered email directly to user {to_email} via port 465")
         return True
     except Exception as e465:
-        pass
+        print(f"[SMTP NOTICE] Port 465 attempt failed for {to_email}: {e465}")
 
+    print(f"[EMAIL DELIVERY FAILED] All delivery strategies failed for user {to_email}")
     return False
 
 def send_otp_email(to_email: str, otp_code: str) -> bool:

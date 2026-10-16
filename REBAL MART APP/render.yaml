@@ -19,8 +19,6 @@ services:
         sync: false
       - key: RESEND_FROM_EMAIL
         value: Rebel Mart <onboarding@resend.dev>
-      - key: RESEND_SANDBOX_EMAIL
-        value: thrinaadhvarma999@gmail.com
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
