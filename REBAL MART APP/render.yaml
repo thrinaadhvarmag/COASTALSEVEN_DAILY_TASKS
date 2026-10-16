@@ -31,7 +31,23 @@ services:
         value: thrinaadhvarma999@gmail.com
       - key: SMTP_FROM_NAME
         value: Rebel Mart
-      - key: CELERY_BROKER_URL
-        sync: false
       - key: REDIS_URL
-        sync: false
+        fromService:
+          type: redis
+          name: rebel-mart-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: rebel-mart-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: rebel-mart-redis
+          property: connectionString
+
+  - type: redis
+    name: rebel-mart-redis
+    plan: free
+    ipAllowList: []
