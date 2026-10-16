@@ -4,7 +4,7 @@ services:
     runtime: python
     rootDir: REBAL MART APP/backend
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: bash start.sh
     plan: free
     envVars:
       - key: PYTHON_VERSION
@@ -15,3 +15,39 @@ services:
         generateValue: true
       - key: FRONTEND_URL
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        value: Rebel Mart <onboarding@resend.dev>
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        value: thrinaadhvarma999@gmail.com
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_EMAIL
+        value: thrinaadhvarma999@gmail.com
+      - key: SMTP_FROM_NAME
+        value: Rebel Mart
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: rebel-mart-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: keyvalue
+          name: rebel-mart-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: keyvalue
+          name: rebel-mart-redis
+          property: connectionString
+
+  - type: keyvalue
+    name: rebel-mart-redis
+    plan: free
+    ipAllowList: []

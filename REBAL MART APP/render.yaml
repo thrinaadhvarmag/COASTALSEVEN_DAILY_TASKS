@@ -33,21 +33,21 @@ services:
         value: Rebel Mart
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: rebel-mart-redis
           property: connectionString
       - key: CELERY_BROKER_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: rebel-mart-redis
           property: connectionString
       - key: CELERY_RESULT_BACKEND
         fromService:
-          type: redis
+          type: keyvalue
           name: rebel-mart-redis
           property: connectionString
 
-  - type: redis
+  - type: keyvalue
     name: rebel-mart-redis
     plan: free
     ipAllowList: []
