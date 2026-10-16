@@ -4,7 +4,7 @@ import { Menu, Search, ShoppingCart, LogOut, X } from "./icons";
 import {
   LayoutDashboard, FileText, UploadCloud, Boxes, Package, ClipboardList,
   MessageCircle, House, ShoppingBag, UserRound, Warehouse, Bell, Check,
-  ExternalLink, Images, ChevronDown, Store, Heart, ArrowLeftRight, Sparkles,
+  ExternalLink, Images, ChevronDown, ChevronRight, Store, Heart, ArrowLeftRight, Sparkles,
   ShieldCheck, Truck, Film, Flame, Award, Tag
 } from "lucide-react";
 import { useWebSocket } from "../hooks/useWebSocket";
@@ -186,13 +186,12 @@ export default function Layout({ children }) {
   ];
 
   const movieUniverses = [
-    { label: "Salaar: Ceasefire", to: "/products?search=Salaar", icon: "🗡️" },
-    { label: "Kalki 2898 AD", to: "/products?search=Kalki", icon: "⚡" },
-    { label: "Baahubali Saga", to: "/products?search=Baahubali", icon: "👑" },
-    { label: "The Raja Saab", to: "/products?search=Raja%20Saab", icon: "🎩" },
-    { label: "Saaho Waaji City", to: "/products?search=Saaho", icon: "🕶️" },
-    { label: "Mirchi Iconic", to: "/products?search=Mirchi", icon: "🔥" },
-    { label: "Spirit (Upcoming)", to: "/products?search=Spirit", icon: "🚓" },
+    { label: "Salaar: Ceasefire", to: "/products?search=Salaar", icon: "🗡️", tag: "Khansaar Epic" },
+    { label: "Kalki 2898 AD", to: "/products?search=Kalki", icon: "⚡", tag: "Sci-Fi Saga" },
+    { label: "Baahubali Saga", to: "/products?search=Baahubali", icon: "👑", tag: "Mahishmati Royal" },
+    { label: "The Raja Saab", to: "/products?search=Raja%20Saab", icon: "🎩", tag: "Vintage Swagger" },
+    { label: "Saaho Waaji City", to: "/products?search=Saaho", icon: "🕶️", tag: "Waaji Thriller" },
+    { label: "Mirchi Iconic", to: "/products?search=Mirchi", icon: "🔥", tag: "Rebel Classic" },
   ];
 
   // Live search suggestions as user types
@@ -509,12 +508,17 @@ export default function Layout({ children }) {
         {/* Mobile Slide-Out Panel */}
         {mobileOpen && !isAdmin && (
           <div className="mobile-panel" id="mobile-navigation-drawer">
-            {/* Mobile Header / Auth Card */}
+            {/* 1. Mobile User Profile Card or Guest Welcome Banner */}
             {!isAuthenticated ? (
               <div className="mobile-drawer-auth-card">
-                <div>
+                <div className="mobile-auth-intro">
+                  <div className="mobile-auth-badge">
+                    <Sparkles size={12} /> REBEL STAR PRABHAS OFFICIAL
+                  </div>
                   <strong className="mobile-drawer-auth-title">Welcome to Rebel Mart</strong>
-                  <span className="mobile-drawer-auth-sub">Sign in to track orders, earn points & save favorites.</span>
+                  <span className="mobile-drawer-auth-sub">
+                    Sign in to track orders, earn fan reward points & get VIP access.
+                  </span>
                 </div>
                 <Link to="/login" onClick={closeMenus} className="btn-primary full mobile-auth-btn">
                   <UserRound size={16} /> Sign in / Register
@@ -522,20 +526,27 @@ export default function Layout({ children }) {
               </div>
             ) : (
               <div className="mobile-drawer-user-card">
-                <span className="mini-avatar">
-                  {user?.profile_image_url ? (
-                    <img src={imageUrl(user.profile_image_url)} alt="" />
-                  ) : (
-                    (user?.username || "R")[0].toUpperCase()
-                  )}
-                </span>
-                <div className="mobile-user-info">
-                  <strong>{user?.username}</strong>
-                  <span className="mobile-user-email">{user?.email}</span>
+                <div className="mobile-user-card-top">
+                  <span className="mobile-user-avatar">
+                    {user?.profile_image_url ? (
+                      <img src={imageUrl(user.profile_image_url)} alt={user?.username || "User"} />
+                    ) : (
+                      (user?.username || "R")[0].toUpperCase()
+                    )}
+                  </span>
+                  <div className="mobile-user-details">
+                    <div className="mobile-user-name-row">
+                      <strong className="mobile-user-name">{user?.username}</strong>
+                      <span className="mobile-user-tier-badge">Fan Club</span>
+                    </div>
+                    <span className="mobile-user-email">{user?.email}</span>
+                  </div>
                 </div>
+
                 <div className="mobile-user-card-actions">
-                  <Link to="/profile" onClick={closeMenus} className="mobile-edit-profile-link">
-                    Profile →
+                  <Link to="/profile" onClick={closeMenus} className="mobile-user-action-btn profile">
+                    <UserRound size={13} />
+                    <span>My Profile</span>
                   </Link>
                   <button
                     type="button"
@@ -543,79 +554,130 @@ export default function Layout({ children }) {
                       closeMenus();
                       signOut();
                     }}
-                    className="mobile-signout-btn"
+                    className="mobile-user-action-btn signout"
                     title="Sign out"
                   >
-                    <LogOut size={13} /> Exit
+                    <LogOut size={13} />
+                    <span>Sign out</span>
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Mobile Search Input */}
-            <form className="mobile-search" onSubmit={search}>
-              <Search size={16} />
+            {/* 2. Mobile Search Input */}
+            <form className="mobile-search-bar" onSubmit={search}>
+              <Search size={16} className="mobile-search-icon" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search Salaar, Kalki, T-Shirts…"
+                placeholder="Search Salaar, Kalki, T-Shirts, Hoodies…"
                 aria-label="Search mobile"
               />
+              {query && (
+                <button
+                  type="button"
+                  className="mobile-search-clear"
+                  onClick={() => setQuery("")}
+                  aria-label="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </form>
 
-            {/* Primary Mobile Links */}
+            {/* 3. Primary Navigation Group */}
             <div className="mobile-nav-group">
-              <NavLink to="/" end onClick={closeMenus} className="mobile-nav-item">
-                <House size={17} color="var(--accent)" /> <span>Home</span>
-              </NavLink>
-              <NavLink to="/products" onClick={closeMenus} className="mobile-nav-item">
-                <ShoppingBag size={17} color="var(--accent)" /> <span>All Merchandise</span>
-              </NavLink>
-              <NavLink to="/offers" onClick={closeMenus} className="mobile-nav-item">
-                <Tag size={17} color="var(--accent)" /> <span>Offers & Deals</span>
-              </NavLink>
-              <NavLink to="/rewards" onClick={closeMenus} className="mobile-nav-item">
-                <Award size={17} color="var(--accent)" /> <span>Rebel Club Rewards</span>
+              <NavLink to="/" end onClick={closeMenus} className="mobile-nav-row">
+                <span className="mobile-nav-icon-wrap">
+                  <House size={16} />
+                </span>
+                <span className="mobile-nav-label">Storefront Home</span>
+                <ChevronRight size={15} className="mobile-nav-chevron" />
               </NavLink>
 
+              <NavLink to="/products" onClick={closeMenus} className="mobile-nav-row">
+                <span className="mobile-nav-icon-wrap">
+                  <ShoppingBag size={16} />
+                </span>
+                <span className="mobile-nav-label">All Merchandise</span>
+                <span className="mobile-nav-tag">New</span>
+                <ChevronRight size={15} className="mobile-nav-chevron" />
+              </NavLink>
+
+              <NavLink to="/offers" onClick={closeMenus} className="mobile-nav-row">
+                <span className="mobile-nav-icon-wrap">
+                  <Tag size={16} />
+                </span>
+                <span className="mobile-nav-label">Offers & Deals</span>
+                <span className="mobile-nav-tag discount">23% OFF</span>
+                <ChevronRight size={15} className="mobile-nav-chevron" />
+              </NavLink>
+
+              <NavLink to="/rewards" onClick={closeMenus} className="mobile-nav-row">
+                <span className="mobile-nav-icon-wrap">
+                  <Award size={16} />
+                </span>
+                <span className="mobile-nav-label">Rebel Club Rewards</span>
+                <ChevronRight size={15} className="mobile-nav-chevron" />
+              </NavLink>
             </div>
 
-            {/* Movie Universes Chip Grid */}
+            {/* 4. Movie Universes Grid (Curated 6 items: 2 columns x 3 rows) */}
             <div className="mobile-section-block">
-              <span className="mobile-section-title">
-                <Film size={13} color="var(--accent)" /> Cinema Universes
-              </span>
+              <div className="mobile-section-header">
+                <span className="mobile-section-title">
+                  <Film size={13} /> Cinema Universes
+                </span>
+                <Link to="/products" onClick={closeMenus} className="mobile-section-link">
+                  View all →
+                </Link>
+              </div>
+
               <div className="mobile-universes-grid">
                 {movieUniverses.map((m) => (
-                  <Link key={m.label} to={m.to} onClick={closeMenus} className="mobile-universe-chip">
-                    <span>{m.icon}</span>
-                    <span>{m.label}</span>
+                  <Link key={m.label} to={m.to} onClick={closeMenus} className="mobile-universe-card">
+                    <span className="mobile-universe-emoji">{m.icon}</span>
+                    <div className="mobile-universe-info">
+                      <strong className="mobile-universe-name">{m.label.split(":")[0]}</strong>
+                      <span className="mobile-universe-tag">{m.tag || "Collection"}</span>
+                    </div>
                   </Link>
                 ))}
               </div>
             </div>
 
-            {/* Account & Bag Shortcuts */}
+            {/* 5. Account & Bag Quick Shortcuts */}
             <div className="mobile-shortcuts-grid">
               <NavLink to="/cart" onClick={closeMenus} className="mobile-shortcut-btn">
-                <ShoppingCart size={16} />
-                <span>Cart ({count})</span>
+                <div className="mobile-shortcut-icon-box">
+                  <ShoppingCart size={17} />
+                  {count > 0 && <span className="mobile-shortcut-badge">{count > 99 ? "99+" : count}</span>}
+                </div>
+                <span className="mobile-shortcut-label">Cart</span>
               </NavLink>
+
               <NavLink to="/wishlist" onClick={closeMenus} className="mobile-shortcut-btn">
-                <Heart size={16} />
-                <span>Wishlist</span>
+                <div className="mobile-shortcut-icon-box">
+                  <Heart size={17} />
+                </div>
+                <span className="mobile-shortcut-label">Wishlist</span>
               </NavLink>
-              {isAuthenticated && (
-                <NavLink to="/orders" onClick={closeMenus} className="mobile-shortcut-btn">
-                  <Package size={16} />
-                  <span>My Orders</span>
-                </NavLink>
-              )}
+
+              <NavLink to={isAuthenticated ? "/orders" : "/login"} onClick={closeMenus} className="mobile-shortcut-btn">
+                <div className="mobile-shortcut-icon-box">
+                  <Package size={17} />
+                </div>
+                <span className="mobile-shortcut-label">My Orders</span>
+              </NavLink>
             </div>
 
-            {/* Appearance & Signout Row */}
-            <div className="mobile-drawer-bottom-bar">
-              <ThemeToggle showLabel={true} />
+            {/* 6. Mobile Drawer Footer (Theme Toggle + Full Sign Out) */}
+            <div className="mobile-drawer-footer">
+              <div className="mobile-theme-row">
+                <span className="mobile-theme-label">Appearance</span>
+                <ThemeToggle showLabel={true} />
+              </div>
+
               {isAuthenticated && (
                 <button
                   type="button"
@@ -623,9 +685,10 @@ export default function Layout({ children }) {
                     closeMenus();
                     signOut();
                   }}
-                  className="mobile-signout-btn full"
+                  className="mobile-signout-full-btn"
                 >
-                  <LogOut size={15} /> Sign out of account
+                  <LogOut size={15} />
+                  <span>Sign out of account</span>
                 </button>
               )}
             </div>

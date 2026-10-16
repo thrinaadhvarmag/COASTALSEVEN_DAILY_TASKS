@@ -5101,6 +5101,7 @@ a {
   /* Uncrowd Mobile Header: Push ThemeToggle, Notifications, Profile Chip, and Sign-in into the Mobile Drawer */
   .header-utility-group .theme-toggle-switch,
   .header-utility-group .theme-toggle-pill,
+  .header-utility-group .notification-wrap,
   .header-utility-group .notifications-wrap,
   .header-utility-group .profile-menu,
   .header-utility-group .header-signin-btn,
@@ -5158,7 +5159,10 @@ a {
   .header-search {
     display: none !important;
   }
-  /* Fully Functional Fixed Mobile Panel Drawer */
+
+  /* ==========================================================================
+     LUXURY CINEMATIC MOBILE DRAWER PANEL
+     ========================================================================== */
   .mobile-panel {
     display: flex !important;
     flex-direction: column !important;
@@ -5171,67 +5175,152 @@ a {
     max-width: 100vw !important;
     height: calc(100vh - 60px) !important;
     height: calc(100dvh - 60px) !important;
-    background: var(--surface) !important;
+    background: var(--bg) !important;
     z-index: 99999 !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9) !important;
-    padding: 18px 18px 100px !important;
-    gap: 16px !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8) !important;
+    padding: 16px 16px 110px !important;
+    gap: 14px !important;
     box-sizing: border-box !important;
     animation: mobileDrawerSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
+
+  /* 1. Mobile User Profile Card & Guest Card */
   .mobile-drawer-auth-card {
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.02) 100%);
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.12) 0%, rgba(17, 17, 20, 0.95) 100%);
     border: 1px solid var(--border-gold);
     border-radius: 14px;
-    padding: 14px 16px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+  }
+  :root[data-theme="light"] .mobile-drawer-auth-card,
+  .light .mobile-drawer-auth-card {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.05) 0%, #ffffff 100%);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  }
+  .mobile-auth-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .mobile-auth-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2px;
   }
   .mobile-drawer-auth-title {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 800;
     color: var(--text-heading);
     display: block;
-    margin-bottom: 2px;
+    line-height: 1.25;
   }
   .mobile-drawer-auth-sub {
-    font-size: 12px;
+    font-size: 12.5px;
     color: var(--muted);
-    line-height: 1.4;
+    line-height: 1.45;
     display: block;
   }
+  .mobile-auth-btn {
+    margin-top: 2px;
+  }
+
+  /* Logged In Luxury User Card */
   .mobile-drawer-user-card {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
+    flex-direction: column;
+    background: #111114;
+    border: 1px solid rgba(197, 160, 89, 0.3);
     border-radius: 14px;
-    padding: 12px 14px;
-    justify-content: space-between;
+    padding: 14px 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
   }
-  .mobile-user-card-actions {
+  :root[data-theme="light"] .mobile-drawer-user-card,
+  .light .mobile-drawer-user-card {
+    background: #ffffff;
+    border: 1px solid rgba(220, 38, 38, 0.16);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  }
+  .mobile-user-card-top {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
+    gap: 13px;
   }
-  .mobile-user-info {
+  .mobile-user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 17px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #dfba56 0%, #9a782a 100%);
+    color: #09090b;
+    border: 2px solid rgba(223, 186, 86, 0.6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+  :root[data-theme="light"] .mobile-user-avatar,
+  .light .mobile-user-avatar {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    color: #ffffff;
+    border: 2px solid rgba(220, 38, 38, 0.25);
+  }
+  .mobile-user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .mobile-user-details {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
   }
-  .mobile-user-info strong {
-    font-size: 13.5px;
+  .mobile-user-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+  .mobile-user-name {
+    font-size: 14.5px;
+    font-weight: 800;
     color: var(--text-heading);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .mobile-user-tier-badge {
+    font-size: 9.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(197, 160, 89, 0.16);
+    color: #dfba56;
+    border: 1px solid rgba(197, 160, 89, 0.4);
+    flex-shrink: 0;
+  }
+  :root[data-theme="light"] .mobile-user-tier-badge,
+  .light .mobile-user-tier-badge {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
   }
   .mobile-user-email {
     font-size: 11.5px;
@@ -5240,28 +5329,74 @@ a {
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .mobile-edit-profile-link {
+  .mobile-user-card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .mobile-user-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 9px;
     font-size: 12px;
     font-weight: 700;
-    color: var(--accent);
-    padding: 5px 10px;
-    background: var(--accent-glow);
-    border-radius: 8px;
     text-decoration: none;
-    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
-  .mobile-search {
+  .mobile-user-action-btn.profile {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  :root[data-theme="light"] .mobile-user-action-btn.profile,
+  .light .mobile-user-action-btn.profile {
+    background: #f8fafc;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+  }
+  .mobile-user-action-btn.signout {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+  }
+  :root[data-theme="light"] .mobile-user-action-btn.signout,
+  .light .mobile-user-action-btn.signout {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+
+  /* 2. Mobile Search Bar */
+  .mobile-search-bar {
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 42px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
+    height: 44px;
+    background: #141418;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 0 14px;
     color: var(--muted);
+    transition: all 0.2s ease;
   }
-  .mobile-search input {
+  :root[data-theme="light"] .mobile-search-bar,
+  .light .mobile-search-bar {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+  .mobile-search-bar:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--border-gold-subtle);
+  }
+  .mobile-search-bar input {
     border: 0;
     outline: 0;
     background: transparent;
@@ -5269,19 +5404,41 @@ a {
     color: var(--text);
     font-size: 13.5px;
   }
+  .mobile-search-icon {
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+  .mobile-search-clear {
+    background: transparent;
+    border: 0;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 3. Primary Navigation List */
   .mobile-nav-group {
     display: flex;
     flex-direction: column;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
+    background: #111114;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 14px;
     overflow: hidden;
   }
-  .mobile-nav-item {
+  :root[data-theme="light"] .mobile-nav-group,
+  .light .mobile-nav-group {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  }
+  .mobile-nav-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 16px;
+    padding: 13px 14px;
     font-size: 13.5px;
     font-weight: 600;
     color: var(--text);
@@ -5289,54 +5446,158 @@ a {
     border-bottom: 1px solid var(--border-subtle);
     transition: background 0.15s ease;
   }
-  .mobile-nav-item:last-child {
+  .mobile-nav-row:last-child {
     border-bottom: none;
   }
-  .mobile-nav-item.active {
-    background: var(--accent-glow);
+  .mobile-nav-icon-wrap {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(197, 160, 89, 0.12);
+    color: #dfba56;
+  }
+  :root[data-theme="light"] .mobile-nav-icon-wrap,
+  .light .mobile-nav-icon-wrap {
+    background: rgba(220, 38, 38, 0.08);
+    color: #dc2626;
+  }
+  .mobile-nav-label {
+    flex: 1;
+    min-width: 0;
+  }
+  .mobile-nav-tag {
+    font-size: 9.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    flex-shrink: 0;
+  }
+  :root[data-theme="light"] .mobile-nav-tag,
+  .light .mobile-nav-tag {
+    background: #f1f5f9;
+    color: #475569;
+  }
+  .mobile-nav-tag.discount {
+    background: rgba(225, 29, 72, 0.2);
+    color: #fda4af;
+    border: 1px solid rgba(225, 29, 72, 0.35);
+  }
+  :root[data-theme="light"] .mobile-nav-tag.discount,
+  .light .mobile-nav-tag.discount {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+  .mobile-nav-chevron {
+    color: var(--muted);
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .mobile-nav-row.active {
+    background: rgba(197, 160, 89, 0.08);
     color: var(--accent);
     font-weight: 800;
-    border-left: 3px solid var(--accent);
   }
+  :root[data-theme="light"] .mobile-nav-row.active,
+  .light .mobile-nav-row.active {
+    background: rgba(220, 38, 38, 0.04);
+    color: #dc2626;
+  }
+
+  /* 4. Movie Universes Grid (Curated 6 items) */
   .mobile-section-block {
     display: flex;
     flex-direction: column;
     gap: 8px;
   }
+  .mobile-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+  }
   .mobile-section-title {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--muted);
-    padding: 0 4px;
+  }
+  .mobile-section-link {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none;
   }
   .mobile-universes-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
-  .mobile-universe-chip {
+  .mobile-universe-card {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 9px 12px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
+    gap: 10px;
+    padding: 10px 12px;
+    background: #111114;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
     text-decoration: none;
     transition: all 0.2s ease;
   }
-  .mobile-universe-chip:hover {
-    border-color: var(--accent);
-    color: var(--accent);
+  :root[data-theme="light"] .mobile-universe-card,
+  .light .mobile-universe-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
   }
+  .mobile-universe-card:active {
+    border-color: var(--accent);
+    transform: scale(0.98);
+  }
+  .mobile-universe-emoji {
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .mobile-universe-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 2px;
+  }
+  .mobile-universe-name {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-heading);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mobile-universe-tag {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #dfba56;
+  }
+  :root[data-theme="light"] .mobile-universe-tag,
+  .light .mobile-universe-tag {
+    color: #dc2626;
+  }
+
+  /* 5. Account & Bag Quick Shortcuts (3 Columns) */
   .mobile-shortcuts-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -5349,53 +5610,107 @@ a {
     justify-content: center;
     gap: 6px;
     padding: 12px 6px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
+    background: #111114;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    font-size: 11.5px;
-    font-weight: 700;
-    color: var(--text);
     text-decoration: none;
     text-align: center;
     transition: all 0.2s ease;
   }
+  :root[data-theme="light"] .mobile-shortcut-btn,
+  .light .mobile-shortcut-btn {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  }
+  .mobile-shortcut-icon-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+  }
+  .mobile-shortcut-badge {
+    position: absolute;
+    top: -6px;
+    right: -12px;
+    font-size: 9.5px;
+    font-weight: 800;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #dfba56;
+    color: #09090b;
+  }
+  :root[data-theme="light"] .mobile-shortcut-badge,
+  .light .mobile-shortcut-badge {
+    background: #dc2626;
+    color: #ffffff;
+  }
+  .mobile-shortcut-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+  }
   .mobile-shortcut-btn.active {
     border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-glow);
   }
-  .mobile-drawer-bottom-bar {
+
+  /* 6. Mobile Drawer Footer (Theme & Sign Out) */
+  .mobile-drawer-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 4px;
+  }
+  .mobile-theme-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: 6px;
+    padding: 10px 14px;
+    background: #111114;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
   }
-  .mobile-signout-btn {
-    display: inline-flex;
+  :root[data-theme="light"] .mobile-theme-row,
+  .light .mobile-theme-row {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  }
+  .mobile-theme-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .mobile-signout-full-btn {
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 7px 12px;
-    background: rgba(239, 68, 68, 0.12);
-    color: #f87171;
-    border: 1px solid rgba(239, 68, 68, 0.28);
-    border-radius: 8px;
-    font-size: 11.5px;
+    gap: 8px;
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 12px;
+    font-size: 13.5px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.15s ease;
-    white-space: nowrap;
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    transition: all 0.2s ease;
   }
-  .mobile-signout-btn:hover {
-    background: rgba(239, 68, 68, 0.22);
-    color: #ef4444;
+  :root[data-theme="light"] .mobile-signout-full-btn,
+  .light .mobile-signout-full-btn {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
   }
-  .mobile-signout-btn.full {
-    width: 100%;
-    padding: 12px 16px;
-    font-size: 13px;
-    border-radius: 12px;
-    margin-top: 6px;
+  .mobile-signout-full-btn:hover {
+    opacity: 0.9;
   }
 
 @keyframes mobileDrawerSlide {
