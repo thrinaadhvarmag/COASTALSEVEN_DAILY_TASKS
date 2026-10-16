@@ -92,33 +92,29 @@ def login_request(payload: UserLogin, db: Session = Depends(get_db)):
         "expires_at": time.time() + 600  # 10 minute expiry
     }
 
-    # Dispatch via Gmail SMTP
-    sent = send_otp_email(user.email, otp_code)
+    # Dispatch via Celery async queue & direct email service
     try:
         from app.celery_app import send_verification_email
         send_verification_email.delay(user.email, otp_code)
+        print(f"[CELERY QUEUED] OTP email queued for {user.email}")
     except Exception as exc:
         print(f"[CELERY NOTICE] Celery async queue not active: {exc}")
 
+    sent = send_otp_email(user.email, otp_code)
+
     print(f"\n==========================================")
     print(f"[AUTH VERIFICATION] User: {user.email}")
-    print(f"[AUTH VERIFICATION] Live OTP Code: {otp_code}")
     print(f"[AUTH VERIFICATION] Dispatched Status: {sent}")
     print(f"==========================================\n")
     
-    if sent:
-        msg = f"A 6-digit verification code has been sent to {user.email}. Please check your Inbox and Spam folder."
-        dev_code = None
-    else:
-        msg = f"Your verification code is: {otp_code} (Sandbox Passcode)"
-        dev_code = otp_code
+    msg = f"A 6-digit verification code has been sent to {user.email}. Please check your Inbox and Spam folder."
 
     return LoginOTPResponse(
         otp_required=True,
         message=msg,
         email=user.email,
         task_id=None,
-        dev_otp=dev_code
+        dev_otp=None
     )
 
 @app.post("/auth/login/verify", response_model=TokenResponse)
@@ -152,19 +148,22 @@ def login_resend(payload: dict, db: Session = Depends(get_db)):
         "code": otp_code,
         "expires_at": time.time() + 600
     }
+    # Dispatch via Celery async queue & direct email service
+    try:
+        from app.celery_app import send_verification_email
+        send_verification_email.delay(email, otp_code)
+        print(f"[CELERY QUEUED] Fresh OTP email queued for {email}")
+    except Exception as exc:
+        print(f"[CELERY NOTICE] Celery async queue not active: {exc}")
+
     sent = send_otp_email(email, otp_code)
-    if sent:
-        msg = f"A fresh verification code has been dispatched to {email}."
-        dev_code = None
-    else:
-        msg = f"Your fresh verification code is: {otp_code} (Sandbox Passcode)"
-        dev_code = otp_code
+    msg = f"A fresh 6-digit verification code has been sent to {email}. Please check your Inbox and Spam folder."
 
     return LoginOTPResponse(
         otp_required=True,
         message=msg,
         email=email,
-        dev_otp=dev_code
+        dev_otp=None
     )
 
 @app.post("/auth/register", response_model=UserResponse)

@@ -107,7 +107,33 @@ services:
       - rebelmart_network
 
   # ----------------------------------------------------------------------------
-  # 6. CERTBOT AUTOMATED SSL (LET'S ENCRYPT)
+  # 6. CELERY ASYNC WORKER (BACKGROUND EMAIL & INVOICE PROCESSING)
+  # ----------------------------------------------------------------------------
+  celery_worker:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: rebelmart_celery
+    restart: always
+    command: celery -A app.celery_app.celery worker --loglevel=info
+    depends_on:
+      - redis
+      - backend
+      - postgres
+    env_file:
+      - .env.ec2
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-ChangeMeSecurePassword2026!}@postgres:5432/${POSTGRES_DB:-rebelmart}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ../../backend/uploads:/app/uploads
+    networks:
+      - rebelmart_network
+
+  # ----------------------------------------------------------------------------
+  # 7. CERTBOT AUTOMATED SSL (LET'S ENCRYPT)
   # ----------------------------------------------------------------------------
   certbot:
     image: certbot/certbot:latest
