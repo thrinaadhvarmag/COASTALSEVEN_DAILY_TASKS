@@ -1,0 +1,133 @@
+version: '3.8'
+
+# ==============================================================================
+# REBEL MART — PRODUCTION AWS EC2 DOCKER COMPOSE ORCHESTRATION
+# ==============================================================================
+# Architecture:
+# - Nginx Reverse Proxy (Port 80/443 with Let's Encrypt SSL, WebSockets, Gzip)
+# - Frontend (React 19 + Vite SPA served via High-Performance Nginx Alpine)
+# - Backend (FastAPI + Uvicorn Workers + Real-Time WebSockets)
+# - PostgreSQL 16 (Relational Database with Persistent Volume)
+# - Redis 7 (In-Memory Cache & Message Broker)
+# - Certbot (Automated SSL Certificate Issuance and Renewal)
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. NGINX PRODUCTION REVERSE PROXY & SSL TERMINATION
+  # ----------------------------------------------------------------------------
+  reverse-proxy:
+    image: nginx:alpine
+    container_name: rebelmart_proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.ec2.conf:/etc/nginx/conf.d/default.conf:ro
+      - certbot_certs:/etc/letsencrypt:ro
+      - certbot_webroot:/var/www/certbot:ro
+      - ../../backend/uploads:/app/uploads:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - rebelmart_network
+
+  # ----------------------------------------------------------------------------
+  # 2. REACT FRONTEND (STATIC SPA ON HIGH-SPEED NGINX)
+  # ----------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    container_name: rebelmart_frontend
+    restart: always
+    environment:
+      - VITE_API_URL=${PUBLIC_API_URL:-/api}
+    networks:
+      - rebelmart_network
+
+  # ----------------------------------------------------------------------------
+  # 3. FASTAPI REST & WEBSOCKET BACKEND
+  # ----------------------------------------------------------------------------
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: rebelmart_backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env.ec2
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-ChangeMeSecurePassword2026!}@postgres:5432/${POSTGRES_DB:-rebelmart}
+      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=production
+    volumes:
+      - ../../backend/uploads:/app/uploads
+    networks:
+      - rebelmart_network
+
+  # ----------------------------------------------------------------------------
+  # 4. POSTGRESQL 16 PRODUCTION DATABASE
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: rebelmart_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ChangeMeSecurePassword2026!}
+      POSTGRES_DB: ${POSTGRES_DB:-rebelmart}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-rebelmart}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rebelmart_network
+
+  # ----------------------------------------------------------------------------
+  # 5. REDIS 7 IN-MEMORY CACHE & WEBSOCKET PUB/SUB BROKER
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: rebelmart_redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - rebelmart_network
+
+  # ----------------------------------------------------------------------------
+  # 6. CERTBOT AUTOMATED SSL (LET'S ENCRYPT)
+  # ----------------------------------------------------------------------------
+  certbot:
+    image: certbot/certbot:latest
+    container_name: rebelmart_certbot
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - rebelmart_network
+
+# ------------------------------------------------------------------------------
+# VOLUMES & ISOLATED INTERNAL NETWORKING
+# ------------------------------------------------------------------------------
+volumes:
+  postgres_data:
+  redis_data:
+  certbot_certs:
+  certbot_webroot:
+
+networks:
+  rebelmart_network:
+    driver: bridge
