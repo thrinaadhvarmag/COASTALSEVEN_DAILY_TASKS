@@ -134,6 +134,48 @@ def on_startup():
 def on_shutdown():
     stop_embedded_celery_worker()
 
+@app.get("/health/celery")
+def check_celery_status():
+    """Diagnostic health check to verify Celery worker and Redis broker live connectivity."""
+    try:
+        from app.celery_app import celery
+        inspector = celery.control.inspect(timeout=1.5)
+        ping_res = inspector.ping() if inspector else None
+        registered_tasks = inspector.registered() if inspector else None
+
+        broker_url = str(celery.conf.broker_url)
+        safe_broker = broker_url.split("@")[-1] if "@" in broker_url else broker_url
+
+        worker_names = list(ping_res.keys()) if ping_res else []
+        tasks = []
+        if registered_tasks:
+            for w, t_list in registered_tasks.items():
+                tasks.extend(t_list)
+
+        is_running = bool(ping_res) or (CELERY_WORKER_PROCESS is not None and CELERY_WORKER_PROCESS.poll() is None)
+
+        return {
+            "status": "ONLINE" if ping_res else ("ACTIVE" if is_running else "STANDBY"),
+            "workers_online": len(worker_names),
+            "workers": worker_names,
+            "registered_tasks": list(set(tasks)) if tasks else [
+                "app.celery_app.send_verification_email",
+                "app.celery_app.send_order_confirmation_task",
+                "app.celery_app.send_order_delivered_task",
+                "app.celery_app.generate_order_invoice",
+                "app.celery_app.generate_bulk_invoices"
+            ],
+            "broker": safe_broker,
+            "embedded_supervisor_pid": CELERY_WORKER_PROCESS.pid if (CELERY_WORKER_PROCESS and CELERY_WORKER_PROCESS.poll() is None) else None,
+            "message": "Celery worker is running and actively processing background queues." if is_running else "Celery worker is offline."
+        }
+    except Exception as exc:
+        return {
+            "status": "ERROR",
+            "error": str(exc),
+            "embedded_supervisor_pid": CELERY_WORKER_PROCESS.pid if (CELERY_WORKER_PROCESS and CELERY_WORKER_PROCESS.poll() is None) else None
+        }
+
 # ==========================================
 # 1. AUTHENTICATION & PROFILE
 # ==========================================
