@@ -487,6 +487,45 @@ def place_order(payload: OrderCreate, current_user: User = Depends(get_current_u
     db.query(CartItem).filter(CartItem.user_id == current_user.id).delete()
     db.commit()
     db.refresh(order)
+
+    # Dispatch Order Confirmation via Celery Task & Direct Fallback
+    order_items_summary = [
+        {
+            "product_name": it.product_name,
+            "quantity": it.quantity,
+            "unit_price": it.unit_price,
+            "subtotal": it.subtotal,
+            "size": it.size
+        } for it in order.items
+    ]
+    full_address = f"{order.address}, {order.city}, {order.state} - {order.pincode}"
+    
+    try:
+        from app.celery_app import send_order_confirmation_task
+        send_order_confirmation_task.delay(
+            current_user.email,
+            order.customer_name or current_user.username,
+            order.id,
+            order.total_amount,
+            order_items_summary,
+            full_address
+        )
+        print(f"[CELERY QUEUED] Order confirmation email queued for order #{order.id} to {current_user.email}")
+    except Exception as exc:
+        print(f"[CELERY NOTICE] Celery queue not active: {exc}. Dispatching direct background email.")
+        try:
+            from app.email_service import send_order_confirmation_email
+            send_order_confirmation_email(
+                current_user.email,
+                order.customer_name or current_user.username,
+                order.id,
+                order.total_amount,
+                order_items_summary,
+                full_address
+            )
+        except Exception as err:
+            print(f"[EMAIL ERROR] Direct confirmation failed: {err}")
+
     return order
 
 @app.get("/orders", response_model=List[OrderResponse])
@@ -535,6 +574,44 @@ async def update_order_status(order_id: int, payload: OrderStatusUpdate, admin: 
                 await ws.send_text(event_payload)
             except Exception:
                 pass
+
+    # If status transitioned to DELIVERED, dispatch Celery 'Thank You Rebel Visit Again' Email
+    if new_status == "DELIVERED" and old_status != "DELIVERED":
+        user_recipient = db.query(User).filter(User.id == order.user_id).first()
+        recipient_email = user_recipient.email if user_recipient else None
+        if recipient_email:
+            order_items_summary = [
+                {
+                    "product_name": it.product_name,
+                    "quantity": it.quantity,
+                    "unit_price": it.unit_price,
+                    "subtotal": it.subtotal,
+                    "size": it.size
+                } for it in order.items
+            ]
+            try:
+                from app.celery_app import send_order_delivered_task
+                send_order_delivered_task.delay(
+                    recipient_email,
+                    order.customer_name or (user_recipient.username if user_recipient else "Rebel"),
+                    order.id,
+                    order.total_amount,
+                    order_items_summary
+                )
+                print(f"[CELERY QUEUED] Order delivered email queued for order #{order.id} to {recipient_email}")
+            except Exception as exc:
+                print(f"[CELERY NOTICE] Celery queue not active: {exc}. Dispatching direct background email.")
+                try:
+                    from app.email_service import send_order_delivered_email
+                    send_order_delivered_email(
+                        recipient_email,
+                        order.customer_name or (user_recipient.username if user_recipient else "Rebel"),
+                        order.id,
+                        order.total_amount,
+                        order_items_summary
+                    )
+                except Exception as err:
+                    print(f"[EMAIL ERROR] Direct delivery email failed: {err}")
 
     return order
 

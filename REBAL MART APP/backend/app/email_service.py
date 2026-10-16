@@ -169,3 +169,161 @@ def send_otp_email(to_email: str, otp_code: str) -> bool:
     """
 
     return send_email(to_email, subject, text, html)
+
+def send_order_confirmation_email(to_email: str, customer_name: str, order_id: int, total_amount: float, items: list = None, address: str = "") -> bool:
+    """Dispatches order confirmation email to the customer."""
+    subject = f"Order #{order_id} Confirmed! Thank You, Rebel 🗡️"
+    items = items or []
+    
+    items_text = "\n".join([f"- {it.get('product_name', 'Item')} (Qty: {it.get('quantity', 1)}, Size: {it.get('size', 'Standard')}) - ₹{it.get('subtotal', 0)}" for it in items])
+    items_html = "".join([
+        f"""
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 14px;"><strong>{it.get('product_name', 'Item')}</strong><br><small style="color: #64748b;">Size: {it.get('size', 'Standard')} · Qty: {it.get('quantity', 1)}</small></td>
+          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 700; font-size: 14px;">₹{float(it.get('subtotal', 0)):.2f}</td>
+        </tr>
+        """ for it in items
+    ])
+
+    text = (
+        f"Hello {customer_name or 'Rebel Fan'},\n\n"
+        f"Thank you for ordering official Rebel Star Prabhas merchandise!\n"
+        f"Your order #{order_id} has been confirmed.\n\n"
+        f"Total Amount: ₹{total_amount:.2f}\n"
+        f"Delivery Address: {address}\n\n"
+        f"Items Ordered:\n{items_text}\n\n"
+        f"You can track your order live at: https://rebel-mart.vercel.app/orders\n\n"
+        f"Wear the cinema with pride!\n\n"
+        f"Warm regards,\n"
+        f"Rebel Mart - Official Merchandise Team\n"
+    )
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; margin: 0; padding: 20px; }}
+        .container {{ max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }}
+        .header {{ background: #0b0f19; padding: 26px 20px; text-align: center; color: #ffffff; }}
+        .header h1 {{ margin: 0; font-size: 22px; letter-spacing: 0.05em; }}
+        .header h1 span {{ color: #d97706; }}
+        .content {{ padding: 28px 24px; color: #1e293b; line-height: 1.6; }}
+        .order-badge {{ display: inline-block; background: #fef3c7; color: #92400e; font-weight: 800; font-size: 12px; padding: 4px 12px; border-radius: 999px; text-transform: uppercase; margin-bottom: 12px; }}
+        .footer {{ background: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #64748b; }}
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>REBEL <span>MART</span></h1>
+          <p style="margin: 4px 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;">Official Prabhas Merchandise Store</p>
+        </div>
+        <div class="content">
+          <span class="order-badge">Order Confirmed · #{order_id}</span>
+          <h2 style="margin: 0 0 10px; color: #0f172a;">Thank You for Your Order, Rebel! 🗡️</h2>
+          <p>Hello <strong>{customer_name or 'Rebel Fan'}</strong>,</p>
+          <p>We have received your order and our crew is preparing your official Prabhas merchandise for shipment.</p>
+          
+          <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+            <thead>
+              <tr style="background: #f8fafc;">
+                <th style="padding: 8px 10px; text-align: left; font-size: 12px; color: #64748b; text-transform: uppercase;">Merchandise</th>
+                <th style="padding: 8px 10px; text-align: right; font-size: 12px; color: #64748b; text-transform: uppercase;">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items_html}
+            </tbody>
+          </table>
+
+          <div style="background: #f8fafc; border-radius: 8px; padding: 14px; margin-top: 16px; font-size: 14px;">
+            <div style="margin-bottom: 6px;">
+              <span style="color: #64748b;">Delivery to:</span>
+              <strong style="display: block; margin-top: 2px;">{address or 'Saved delivery address'}</strong>
+            </div>
+            <div style="border-top: 1px solid #e2e8f0; padding-top: 8px; font-size: 16px; display: flex; justify-content: space-between;">
+              <span>Total Paid:</span>
+              <strong style="color: #d97706;">₹{float(total_amount):.2f}</strong>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 24px;">
+            <a href="https://rebel-mart.vercel.app/orders" style="display: inline-block; background: #dc2626; color: #ffffff; text-decoration: none; font-weight: 700; padding: 12px 28px; border-radius: 999px; font-size: 14px;">Track Your Order Live →</a>
+          </div>
+        </div>
+        <div class="footer">
+          &copy; 2026 Rebel Mart · Official Rebel Star Prabhas Fan Destination
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    return send_email(to_email, subject, text, html)
+
+def send_order_delivered_email(to_email: str, customer_name: str, order_id: int, total_amount: float = 0.0, items: list = None) -> bool:
+    """Dispatches 'Order Delivered - Thank U Rebel Visit Again' email."""
+    subject = f"Order #{order_id} Delivered — Thank You Rebel, Visit Again! 👑"
+
+    text = (
+        f"Hello {customer_name or 'Rebel Fan'},\n\n"
+        f"Your Rebel Mart order #{order_id} has been delivered successfully!\n\n"
+        f"ORDER DELIVERED — THANK U REBEL, VISIT AGAIN! 👑\n\n"
+        f"We hope you love your official Rebel Star Prabhas merchandise.\n"
+        f"Wear your cinema pride and rule the world!\n\n"
+        f"You have also earned Rebel Fan Club reward points for this purchase.\n"
+        f"Explore new movie drops: https://rebel-mart.vercel.app\n\n"
+        f"Warm regards,\n"
+        f"Rebel Mart - Official Merchandise Team\n"
+    )
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; margin: 0; padding: 20px; }}
+        .container {{ max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }}
+        .header {{ background: #0b0f19; padding: 26px 20px; text-align: center; color: #ffffff; }}
+        .header h1 {{ margin: 0; font-size: 22px; letter-spacing: 0.05em; }}
+        .header h1 span {{ color: #d97706; }}
+        .content {{ padding: 32px 24px; color: #1e293b; line-height: 1.6; text-align: center; }}
+        .delivered-badge {{ display: inline-block; background: #dcfce7; color: #166534; font-weight: 800; font-size: 13px; padding: 6px 16px; border-radius: 999px; text-transform: uppercase; margin-bottom: 16px; }}
+        .crown-banner {{ background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 20px 0; }}
+        .footer {{ background: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #64748b; }}
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>REBEL <span>MART</span></h1>
+          <p style="margin: 4px 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;">Official Prabhas Merchandise Store</p>
+        </div>
+        <div class="content">
+          <span class="delivered-badge">✔ Package Delivered</span>
+          <h2 style="margin: 0 0 10px; color: #0f172a; font-size: 22px;">Order #{order_id} Has Arrived!</h2>
+          <p>Hello <strong>{customer_name or 'Rebel Fan'}</strong>,</p>
+          <p>Your package has been successfully delivered to your doorstep.</p>
+          
+          <div class="crown-banner">
+            <div style="font-size: 36px; margin-bottom: 8px;">👑</div>
+            <strong style="font-size: 20px; color: #78350f; display: block; letter-spacing: 0.02em;">THANK U REBEL, VISIT AGAIN!</strong>
+            <p style="margin: 8px 0 0; font-size: 13.5px; color: #92400e;">Wear the Cinema. Rule the World. You have unlocked exclusive fan club rewards for this order!</p>
+          </div>
+
+          <div style="margin-top: 24px;">
+            <a href="https://rebel-mart.vercel.app/products" style="display: inline-block; background: #dc2626; color: #ffffff; text-decoration: none; font-weight: 700; padding: 12px 28px; border-radius: 999px; font-size: 14px;">Explore Next Cinema Drops →</a>
+          </div>
+        </div>
+        <div class="footer">
+          &copy; 2026 Rebel Mart · Official Rebel Star Prabhas Fan Destination
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    return send_email(to_email, subject, text, html)

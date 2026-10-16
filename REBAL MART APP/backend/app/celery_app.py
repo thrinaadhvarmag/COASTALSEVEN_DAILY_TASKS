@@ -111,3 +111,25 @@ def send_verification_email(self, recipient_email: str, otp_code: str):
         return {"status": "SUCCESS" if success else "FAILED", "email": recipient_email}
     except Exception as exc:
         return {"status": "FAILED", "error": str(exc)}
+
+@celery.task(bind=True, name="app.celery_app.send_order_confirmation_task")
+def send_order_confirmation_task(self, recipient_email: str, customer_name: str, order_id: int, total_amount: float, items: list = None, address: str = ""):
+    """Celery background task to dispatch order confirmation email."""
+    self.update_state(state="PROGRESS", meta={"percent": 50, "message": f"Sending confirmation for order #{order_id} to {recipient_email}..."})
+    try:
+        from app.email_service import send_order_confirmation_email
+        success = send_order_confirmation_email(recipient_email, customer_name, order_id, total_amount, items, address)
+        return {"status": "SUCCESS" if success else "FAILED", "order_id": order_id, "email": recipient_email}
+    except Exception as exc:
+        return {"status": "FAILED", "error": str(exc), "order_id": order_id}
+
+@celery.task(bind=True, name="app.celery_app.send_order_delivered_task")
+def send_order_delivered_task(self, recipient_email: str, customer_name: str, order_id: int, total_amount: float = 0.0, items: list = None):
+    """Celery background task to dispatch 'order delivered thank u rebel visit again' email."""
+    self.update_state(state="PROGRESS", meta={"percent": 50, "message": f"Sending delivery thank you email for order #{order_id} to {recipient_email}..."})
+    try:
+        from app.email_service import send_order_delivered_email
+        success = send_order_delivered_email(recipient_email, customer_name, order_id, total_amount, items)
+        return {"status": "SUCCESS" if success else "FAILED", "order_id": order_id, "email": recipient_email}
+    except Exception as exc:
+        return {"status": "FAILED", "error": str(exc), "order_id": order_id}
