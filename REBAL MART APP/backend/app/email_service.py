@@ -12,7 +12,8 @@ load_dotenv(env_path)
 import json
 import urllib.request
 
-# Load RESEND_API_KEY from environment or use default key
+# Load Webhook / Resend / SMTP credentials
+GMAIL_WEBHOOK_URL = os.getenv("GMAIL_WEBHOOK_URL")
 RESEND_API_KEY = os.getenv("RESEND_API_KEY") or "".join(["re_", "cX8vkMqJ_", "CuaUL8CXpsg5LCC3aiiT4it7"])
 RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev")
 
@@ -22,6 +23,69 @@ SMTP_USER = os.getenv("SMTP_USER", "thrinaadhvarma999@gmail.com")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "nzssoeubvjrvqqbk")
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
 SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "Rebel Mart")
+
+def send_via_google_webhook(to_email: str, subject: str, html_content: str, text_content: str) -> bool:
+    """
+    Sends email over HTTPS (Port 443) via Google Apps Script Web App directly from your Gmail.
+    - 100% FREE ($0.00 forever)
+    - NO domain purchase needed!
+    - Delivers to ANY recipient email address in the world (Gmail, Yahoo, Outlook, etc.)
+    - Bypasses all Render outbound port blocks (runs over standard HTTPS Port 443)
+    """
+    if not GMAIL_WEBHOOK_URL:
+        return False
+    payload = {
+        "to": to_email,
+        "subject": subject,
+        "html": html_content or f"<pre>{text_content}</pre>",
+        "text": text_content
+    }
+    # Method 1: requests (handles automatic redirects natively)
+    try:
+        import requests
+        resp = requests.post(GMAIL_WEBHOOK_URL, json=payload, timeout=15, allow_redirects=True)
+        if resp.status_code == 200:
+            print(f"[GOOGLE WEBHOOK SUCCESS] Email delivered directly to user {to_email}: {resp.text}")
+            return True
+        else:
+            print(f"[GOOGLE WEBHOOK STATUS {resp.status_code}] Response: {resp.text}")
+    except ImportError:
+        pass
+    except Exception as exc:
+        print(f"[GOOGLE WEBHOOK NOTICE] requests attempt error: {exc}. Trying urllib fallback...")
+
+    # Method 2: standard urllib fallback
+    try:
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            GMAIL_WEBHOOK_URL,
+            data=data,
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "RebelMart-Notifier/1.0"
+            },
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                resp_body = resp.read().decode("utf-8")
+                print(f"[GOOGLE WEBHOOK SUCCESS] Email delivered directly to user {to_email}: {resp_body}")
+                return True
+        except urllib.error.HTTPError as he:
+            if he.code in (301, 302, 303, 307, 308) and "Location" in he.headers:
+                red_url = he.headers["Location"]
+                with urllib.request.urlopen(red_url, timeout=15) as r2:
+                    resp_body = r2.read().decode("utf-8")
+                    print(f"[GOOGLE WEBHOOK REDIRECT SUCCESS] Email delivered directly to user {to_email}: {resp_body}")
+                    return True
+            else:
+                err_text = he.read().decode("utf-8") if he.fp else str(he)
+                print(f"[GOOGLE WEBHOOK HTTP ERROR] Status {he.code} for recipient {to_email}: {err_text}")
+                return False
+    except Exception as e:
+        print(f"[GOOGLE WEBHOOK ERROR] Failed to send to {to_email}: {e}")
+        return False
+
 def send_via_resend(to_email: str, subject: str, html_content: str, text_content: str) -> bool:
     """
     Sends email over HTTPS (Port 443) via Resend REST API directly to the user's email address.
@@ -64,15 +128,21 @@ def send_via_resend(to_email: str, subject: str, html_content: str, text_content
 def send_email(to_email: str, subject: str, text_content: str, html_content: str = None) -> bool:
     """
     Sends an email directly to the recipient user:
-    1. First tries Resend HTTPS REST API (Port 443, instant, cloud-friendly).
-    2. Falls back to direct Gmail SMTP with STARTTLS (port 587) and SSL (port 465).
+    1. First tries Google Apps Script Webhook (Port 443, 100% FREE, zero domain required, sends to ANY email).
+    2. Then tries Resend HTTPS REST API (Port 443, instant, cloud-friendly).
+    3. Falls back to direct Gmail SMTP with STARTTLS (port 587) and SSL (port 465).
     Guarantees the email goes strictly to the customer's registered email address.
     """
-    # Strategy 1: Resend HTTPS API (Port 443)
+    # Strategy 1: Google Apps Script Webhook (100% Free, NO domain required, works with ANY recipient)
+    if GMAIL_WEBHOOK_URL:
+        if send_via_google_webhook(to_email, subject, html_content, text_content):
+            return True
+
+    # Strategy 2: Resend HTTPS API (Port 443)
     if send_via_resend(to_email, subject, html_content, text_content):
         return True
 
-    # Strategy 2: Direct SMTP to User's Email
+    # Strategy 3: Direct SMTP to User's Email
     print(f"[SMTP FALLBACK] Resend unavailable for {to_email}. Connecting to Gmail SMTP for direct delivery...")
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject

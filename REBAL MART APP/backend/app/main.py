@@ -176,6 +176,33 @@ def check_celery_status():
             "embedded_supervisor_pid": CELERY_WORKER_PROCESS.pid if (CELERY_WORKER_PROCESS and CELERY_WORKER_PROCESS.poll() is None) else None
         }
 
+@app.get("/health/email")
+def check_email_status(to: str = None):
+    """Live diagnostic endpoint to verify email delivery configuration and test sends."""
+    from app.email_service import GMAIL_WEBHOOK_URL, RESEND_API_KEY, send_email
+    provider = "Google Apps Script Webhook" if GMAIL_WEBHOOK_URL else ("Resend API" if RESEND_API_KEY else "Gmail SMTP")
+    if not to:
+        return {
+            "status": "CONFIGURED",
+            "active_provider": provider,
+            "google_webhook_configured": bool(GMAIL_WEBHOOK_URL),
+            "resend_configured": bool(RESEND_API_KEY),
+            "instructions": "Append ?to=recipient@gmail.com to this URL to trigger an immediate live test delivery."
+        }
+    
+    success = send_email(
+        to_email=to,
+        subject="Rebel Mart Email Verification Test 🗡️",
+        text_content=f"Hello Rebel Fan!\n\nThis is a live diagnostic confirmation from Rebel Mart. Your email provider ({provider}) is fully active and delivering emails flawlessly!\n\nWarm regards,\nRebel Mart Team",
+        html_content=f"<div style='font-family:sans-serif;padding:20px;border:1px solid #d97706;border-radius:8px;'><h2>Rebel Mart Email Test 🗡️</h2><p>Your active email provider <strong>{provider}</strong> is working and delivering directly to your inbox!</p></div>"
+    )
+    return {
+        "status": "DELIVERED" if success else "FAILED",
+        "active_provider": provider,
+        "recipient": to,
+        "google_webhook_configured": bool(GMAIL_WEBHOOK_URL)
+    }
+
 # ==========================================
 # 1. AUTHENTICATION & PROFILE
 # ==========================================
