@@ -533,9 +533,22 @@ export default function Layout({ children }) {
                   <strong>{user?.username}</strong>
                   <span className="mobile-user-email">{user?.email}</span>
                 </div>
-                <Link to="/profile" onClick={closeMenus} className="mobile-edit-profile-link">
-                  Profile →
-                </Link>
+                <div className="mobile-user-card-actions">
+                  <Link to="/profile" onClick={closeMenus} className="mobile-edit-profile-link">
+                    Profile →
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeMenus();
+                      signOut();
+                    }}
+                    className="mobile-signout-btn"
+                    title="Sign out"
+                  >
+                    <LogOut size={13} /> Exit
+                  </button>
+                </div>
               </div>
             )}
 
@@ -604,8 +617,15 @@ export default function Layout({ children }) {
             <div className="mobile-drawer-bottom-bar">
               <ThemeToggle showLabel={true} />
               {isAuthenticated && (
-                <button type="button" onClick={signOut} className="mobile-signout-btn">
-                  <LogOut size={15} /> Sign out
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeMenus();
+                    signOut();
+                  }}
+                  className="mobile-signout-btn full"
+                >
+                  <LogOut size={15} /> Sign out of account
                 </button>
               )}
             </div>
