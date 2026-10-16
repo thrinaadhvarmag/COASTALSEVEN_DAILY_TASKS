@@ -11,7 +11,7 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     role = Column(String(50), default="customer")  # "admin" or "customer"
-    profile_image_url = Column(String(500), nullable=True)
+    profile_image_url = Column(Text, nullable=True)
     email_verified = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 

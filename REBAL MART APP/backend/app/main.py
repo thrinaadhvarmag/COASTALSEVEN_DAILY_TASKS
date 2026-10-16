@@ -137,6 +137,61 @@ def on_startup():
 def on_shutdown():
     stop_embedded_celery_worker()
 
+@app.get("/")
+def root():
+    return {
+        "service": "Rebel Mart API",
+        "status": "ONLINE",
+        "version": "2.0.0",
+        "docs": "/docs",
+        "health": "/health",
+        "database_health": "/health/db",
+        "celery_health": "/health/celery",
+        "email_health": "/health/email"
+    }
+
+@app.get("/health")
+@app.get("/health/db")
+def check_database_status(db: Session = Depends(get_db)):
+    """Live diagnostic endpoint to verify database connectivity, engine type, and persisted record counts."""
+    from sqlalchemy import text
+    try:
+        # Ping DB with active query
+        db.execute(text("SELECT 1"))
+        db_url_str = str(engine.url)
+        is_postgres = "postgresql" in db_url_str or "postgres" in db_url_str
+        safe_host = engine.url.host or "local"
+        
+        user_count = db.query(User).count()
+        product_count = db.query(Product).count()
+        order_count = db.query(Order).count()
+        admin_user = db.query(User).filter(User.role == "admin").first()
+        
+        return {
+            "status": "CONNECTED",
+            "database_type": "PostgreSQL" if is_postgres else "SQLite",
+            "is_persistent": is_postgres,
+            "database_host": safe_host,
+            "database_name": engine.url.database,
+            "counts": {
+                "users": user_count,
+                "products": product_count,
+                "orders": order_count
+            },
+            "admin_configured": bool(admin_user),
+            "admin_username": admin_user.username if admin_user else None,
+            "message": "Database is actively connected and persisting records across sessions."
+        }
+    except Exception as exc:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "DISCONNECTED",
+                "error": str(exc),
+                "message": "Failed to connect to database. Please verify DATABASE_URL in your environment."
+            }
+        )
+
 @app.get("/health/celery")
 def check_celery_status():
     """Diagnostic health check to verify Celery worker and Redis broker live connectivity."""
@@ -339,12 +394,18 @@ def update_me(payload: UserUpdate, current_user: User = Depends(get_current_user
 
 @app.post("/auth/me/profile-picture", response_model=UserResponse)
 async def upload_profile_picture(image: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    ext = os.path.splitext(image.filename)[1] or ".jpg"
+    raw_bytes = await image.read()
+    ext = os.path.splitext(image.filename)[1].lower() or ".jpg"
     filename = f"avatar_{current_user.id}_{uuid.uuid4().hex[:8]}{ext}"
     filepath = os.path.join(UPLOADS_DIR, filename)
-    with open(filepath, "wb") as f:
-        f.write(await image.read())
-    current_user.profile_image_url = f"/uploads/{filename}"
+    try:
+        with open(filepath, "wb") as f:
+            f.write(raw_bytes)
+    except Exception:
+        pass
+    mime_type = image.content_type or (f"image/{ext.lstrip('.')}" if ext else "image/jpeg")
+    b64_data = base64.b64encode(raw_bytes).decode("utf-8")
+    current_user.profile_image_url = f"data:{mime_type};base64,{b64_data}"
     db.commit()
     db.refresh(current_user)
     return current_user
