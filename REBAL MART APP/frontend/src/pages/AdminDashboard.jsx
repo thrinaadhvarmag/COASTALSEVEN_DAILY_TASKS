@@ -16,7 +16,7 @@ import { useDeleteProductMutation, useUpdateProductMutation } from "../hooks/use
 import { AdminLiveChat } from "../components/LiveChat";
 import BackgroundJobsPanel from "../components/BackgroundJobsPanel";
 
-const blank = { name: "", description: "", price: "", stock: "", actor_name: "Prabhas", movie_name: "", category: "", tags: "" };
+const blank = { name: "", description: "", price: "", stock: "", actor_name: "Prabhas", movie_name: "", category: "", tags: "", image_url: "" };
 const statuses = ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"];
 const LOW_STOCK_THRESHOLD = 10;
 
@@ -371,6 +371,7 @@ export default function AdminDashboard() {
   const [imageTarget, setImageTarget] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [imageUrlDraft, setImageUrlDraft] = useState("");
   const [search, setSearch] = useState("");
   const [catalogMovieFilter, setCatalogMovieFilter] = useState("");
   const [catalogCategoryFilter, setCatalogCategoryFilter] = useState("");
@@ -598,7 +599,8 @@ export default function AdminDashboard() {
         actor_name: form.actor_name.trim() || null,
         movie_name: form.movie_name.trim() || null,
         category: form.category.trim() || null,
-        tags: form.tags.trim() || null
+        tags: form.tags.trim() || null,
+        image_url: form.image_url?.trim() || null
       };
       let product;
       if (editing) {
@@ -621,6 +623,9 @@ export default function AdminDashboard() {
       resetForm();
       await queryClient.invalidateQueries({ queryKey: ["products"] });
       await queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      await queryClient.invalidateQueries({ queryKey: ["products-infinite"] });
+      await queryClient.invalidateQueries({ queryKey: ["product", product.id] });
+      await queryClient.invalidateQueries({ queryKey: ["products-count"] });
       await load();
     } catch (e) {
       show(getErrorMessage(e), "error");
@@ -640,7 +645,8 @@ export default function AdminDashboard() {
       actor_name: p.actor_name || "Prabhas",
       movie_name: p.movie_name || "",
       category: p.category || "",
-      tags: p.tags || ""
+      tags: p.tags || "",
+      image_url: p.image_url || ""
     });
     setImageFile(null);
     setImagePreview(p.image_url ? imageUrl(p.image_url) : "");
@@ -669,22 +675,33 @@ export default function AdminDashboard() {
   const openImage = (p) => {
     setImageTarget(p);
     setImageFile(null);
+    setImageUrlDraft(p.image_url || "");
     setImagePreview(p.image_url ? imageUrl(p.image_url) : "");
   };
 
   const uploadOnly = async () => {
-    if (!imageTarget || !imageFile) return;
+    if (!imageTarget) return;
     setBusy(true);
     try {
-      const fd = new FormData();
-      fd.append("image", imageFile);
-      await api.post(`/products/${imageTarget.id}/image`, fd, { headers: { "Content-Type": "multipart/form-data" } });
-      show("Product image updated");
+      const targetId = imageTarget.id;
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append("image", imageFile);
+        await api.post(`/products/${targetId}/image`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+        show("Product image uploaded successfully");
+      } else if (imageUrlDraft.trim() !== (imageTarget.image_url || "")) {
+        await api.put(`/products/${targetId}`, { image_url: imageUrlDraft.trim() || null });
+        show("Product image link updated successfully");
+      }
       setImageTarget(null);
       setImageFile(null);
       setImagePreview("");
+      setImageUrlDraft("");
       await queryClient.invalidateQueries({ queryKey: ["products"] });
-      await queryClient.invalidateQueries({ queryKey: ["product", imageTarget.id] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      await queryClient.invalidateQueries({ queryKey: ["products-infinite"] });
+      await queryClient.invalidateQueries({ queryKey: ["product", targetId] });
+      await queryClient.invalidateQueries({ queryKey: ["products-count"] });
       await load();
     } catch (e) {
       show(getErrorMessage(e), "error");
@@ -1719,6 +1736,23 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
+                      {/* Direct Image URL input */}
+                      <label style={{ marginTop: 8 }}>
+                        <span style={{ fontSize: 12.5, fontWeight: 600 }}>Image URL or Path (optional)</span>
+                        <input
+                          className="input"
+                          value={form.image_url || ""}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setForm({ ...form, image_url: val });
+                            if (val.trim()) {
+                              setImagePreview(imageUrl(val.trim()));
+                            }
+                          }}
+                          placeholder="/events/rajasaab.webp or https://images.unsplash.com/..."
+                        />
+                      </label>
+
                       {upload > 0 && (
                         <div className="upload-progress">
                           <span style={{ width: `${upload}%` }} />
@@ -1991,8 +2025,8 @@ export default function AdminDashboard() {
       )}
 
       {/* 8. PRODUCT IMAGE MODAL */}
-      {section === "products" && imageTarget && (
-        <div className="modal-backdrop" onClick={() => { setImageTarget(null); setImagePreview(""); }}>
+      {imageTarget && (
+        <div className="modal-backdrop" onClick={() => { setImageTarget(null); setImagePreview(""); setImageUrlDraft(""); }}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-head">
               <div>
@@ -2000,7 +2034,7 @@ export default function AdminDashboard() {
                 <h2>Change Product Image</h2>
                 <p>{imageTarget.name}</p>
               </div>
-              <button className="icon-btn" type="button" onClick={() => { setImageTarget(null); setImagePreview(""); }} title="Close">
+              <button className="icon-btn" type="button" onClick={() => { setImageTarget(null); setImagePreview(""); setImageUrlDraft(""); }} title="Close">
                 <X size={18} />
               </button>
             </div>
@@ -2035,12 +2069,32 @@ export default function AdminDashboard() {
               )}
             </div>
 
+            <div style={{ marginTop: 12 }}>
+              <label>
+                <span style={{ fontSize: 12.5, fontWeight: 600, display: "block", marginBottom: 4 }}>
+                  Or enter direct Image URL / Path:
+                </span>
+                <input
+                  className="input"
+                  value={imageUrlDraft}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setImageUrlDraft(val);
+                    if (val.trim()) {
+                      setImagePreview(imageUrl(val.trim()));
+                    }
+                  }}
+                  placeholder="/events/saaho.webp or https://images.unsplash.com/..."
+                />
+              </label>
+            </div>
+
             <div className="form-actions" style={{ marginTop: 18, display: "flex", justifyContent: "flex-end", gap: 10 }}>
-              <button className="btn-secondary" type="button" onClick={() => { setImageTarget(null); setImagePreview(""); }}>
+              <button className="btn-secondary" type="button" onClick={() => { setImageTarget(null); setImagePreview(""); setImageUrlDraft(""); }}>
                 Cancel
               </button>
-              <button className="btn-primary" type="button" disabled={!imageFile || busy} onClick={uploadOnly}>
-                {busy ? "Uploading…" : "Upload New Image"}
+              <button className="btn-primary" type="button" disabled={(!imageFile && !imageUrlDraft.trim()) || busy} onClick={uploadOnly}>
+                {busy ? "Saving…" : "Save New Image"}
               </button>
             </div>
           </div>

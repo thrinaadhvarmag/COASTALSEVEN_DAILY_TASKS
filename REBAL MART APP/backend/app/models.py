@@ -27,7 +27,7 @@ class Product(Base):
     description = Column(Text, nullable=True)
     price = Column(Float, nullable=False)
     stock = Column(Integer, default=0, nullable=False)
-    image_url = Column(String(500), nullable=True)
+    image_url = Column(Text, nullable=True)
     actor_name = Column(String(150), default="Prabhas", nullable=True)
     movie_name = Column(String(150), index=True, nullable=True)
     category = Column(String(100), index=True, nullable=True)
@@ -88,7 +88,7 @@ class OrderItem(Base):
     unit_price = Column(Float, nullable=False)
     subtotal = Column(Float, nullable=False)
     size = Column(String(20), nullable=True)
-    image_url = Column(String(500), nullable=True)
+    image_url = Column(Text, nullable=True)
 
     order = relationship("Order", back_populates="items")
 

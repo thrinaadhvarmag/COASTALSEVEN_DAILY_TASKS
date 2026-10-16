@@ -5,6 +5,7 @@ import datetime
 import asyncio
 import io
 import csv
+import base64
 from typing import Optional, List
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -433,7 +434,7 @@ def create_product(payload: ProductCreate, admin: User = Depends(get_current_adm
         movie_name=payload.movie_name,
         category=payload.category,
         tags=payload.tags,
-        image_url=None,
+        image_url=payload.image_url,
         rating=5.0,
         review_count=1
     )
@@ -470,13 +471,20 @@ async def upload_product_image(product_id: int, image: UploadFile = File(...), a
     if not prod:
         raise HTTPException(status_code=404, detail="Product not found.")
     
-    ext = os.path.splitext(image.filename)[1] or ".jpg"
+    raw_bytes = await image.read()
+    ext = os.path.splitext(image.filename)[1].lower() or ".jpg"
     filename = f"prod_{product_id}_{uuid.uuid4().hex[:8]}{ext}"
     filepath = os.path.join(UPLOADS_DIR, filename)
-    with open(filepath, "wb") as f:
-        f.write(await image.read())
+    try:
+        with open(filepath, "wb") as f:
+            f.write(raw_bytes)
+    except Exception:
+        pass
     
-    prod.image_url = f"/uploads/{filename}"
+    # Store persistent base64 data URI in PostgreSQL so images survive Render instance spins and redeploys
+    mime_type = image.content_type or (f"image/{ext.lstrip('.')}" if ext else "image/jpeg")
+    b64_data = base64.b64encode(raw_bytes).decode("utf-8")
+    prod.image_url = f"data:{mime_type};base64,{b64_data}"
     db.commit()
     db.refresh(prod)
     return prod
@@ -925,12 +933,19 @@ def update_homepage_content(payload: dict, admin: User = Depends(get_current_adm
 
 @app.post("/homepage/campaigns/{index}/image")
 async def upload_campaign_image(index: int, image: UploadFile = File(...), admin: User = Depends(get_current_admin), db: Session = Depends(get_db)):
-    ext = os.path.splitext(image.filename)[1] or ".webp"
+    raw_bytes = await image.read()
+    ext = os.path.splitext(image.filename)[1].lower() or ".webp"
     filename = f"campaign_{index}_{uuid.uuid4().hex[:8]}{ext}"
     filepath = os.path.join(UPLOADS_DIR, filename)
-    with open(filepath, "wb") as f:
-        f.write(await image.read())
-    img_url = f"/uploads/{filename}"
+    try:
+        with open(filepath, "wb") as f:
+            f.write(raw_bytes)
+    except Exception:
+        pass
+        
+    mime_type = image.content_type or f"image/{ext.lstrip('.')}"
+    b64_data = base64.b64encode(raw_bytes).decode("utf-8")
+    img_url = f"data:{mime_type};base64,{b64_data}"
     
     campaigns_list = []
     setting = db.query(SiteSetting).filter(SiteSetting.key == "homepage_content").first()
@@ -949,12 +964,18 @@ async def upload_campaign_image(index: int, image: UploadFile = File(...), admin
 
 @app.post("/homepage/assets/{key}/image")
 async def upload_asset_image(key: str, image: UploadFile = File(...), admin: User = Depends(get_current_admin)):
-    ext = os.path.splitext(image.filename)[1] or ".webp"
+    raw_bytes = await image.read()
+    ext = os.path.splitext(image.filename)[1].lower() or ".webp"
     filename = f"asset_{key}_{uuid.uuid4().hex[:8]}{ext}"
     filepath = os.path.join(UPLOADS_DIR, filename)
-    with open(filepath, "wb") as f:
-        f.write(await image.read())
-    return {"image": f"/uploads/{filename}"}
+    try:
+        with open(filepath, "wb") as f:
+            f.write(raw_bytes)
+    except Exception:
+        pass
+    mime_type = image.content_type or f"image/{ext.lstrip('.')}"
+    b64_data = base64.b64encode(raw_bytes).decode("utf-8")
+    return {"image": f"data:{mime_type};base64,{b64_data}"}
 
 # ==========================================
 # 6. AI SHOPPING ASSISTANT & GOVERNANCE

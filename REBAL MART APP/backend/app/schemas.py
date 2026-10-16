@@ -57,6 +57,7 @@ class ProductBase(BaseModel):
     movie_name: Optional[str] = None
     category: Optional[str] = None
     tags: Optional[str] = None
+    image_url: Optional[str] = None
 
 class ProductCreate(ProductBase):
     pass
@@ -70,6 +71,7 @@ class ProductUpdate(BaseModel):
     movie_name: Optional[str] = None
     category: Optional[str] = None
     tags: Optional[str] = None
+    image_url: Optional[str] = None
 
 class ProductResponse(ProductBase):
     id: int

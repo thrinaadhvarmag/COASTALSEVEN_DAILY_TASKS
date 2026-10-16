@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, CheckCircle2, FileDown, LoaderCircle, PackageCheck, XCircle, AlertCircle } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { getErrorMessage, money, statusClasses, statusLabel } from "../lib/constants";
+import { getErrorMessage, money, statusClasses, statusLabel, imageUrl } from "../lib/constants";
 import { useOrder } from "../hooks/useOrders";
 import { backgroundApi, ordersApi } from "../services/api";
 import { useRealtime } from "../context/RealtimeContext";
@@ -186,38 +186,42 @@ Instructions
         </div>
 
         <div className="order-items">
-{(order.items || []).map((item) =>
+          {(order.items || []).map((item) => (
             <div className="order-item" key={item.id}>
+              <div className="cart-thumb">
+                {item.image_url ? (
+                  <img
+                    src={imageUrl(item.image_url)}
+                    alt={item.product_name || `Product #${item.product_id}`}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                      if (e.currentTarget.nextSibling) {
+                        e.currentTarget.nextSibling.style.display = "inline-flex";
+                      }
+                    }}
+                  />
+                ) : null}
+                <span style={{ display: item.image_url ? "none" : "inline-flex" }}>
+                  <PackageCheck size={20} />
+                </span>
+              </div>
 
-                <div className="cart-thumb">
-
-                    <span>
-
-                        <PackageCheck size={20}/>
-
-                    </span>
-
-                </div>
-
-                <div>
-
-                    <strong>
-
-Product #{item.product_id}
-                    </strong>
-
-                    <span>
-
-Qty {item.quantity}{item.size ? ` · Size ${item.size}` : ""} · {money(item.unit_price)} each
-                    </span>
-
-                </div>
-
+              <div>
                 <strong>
+                  <Link to={`/products/${item.product_id}`} style={{ color: "inherit", textDecoration: "none" }}>
+                    {item.product_name || `Product #${item.product_id}`}
+                  </Link>
+                </strong>
+                <span>
+                  Qty {item.quantity}{item.size ? ` · Size ${item.size}` : ""} · {money(item.unit_price)} each
+                </span>
+              </div>
 
-{money(item.subtotal)}
-    </strong>
-</div>)}</div>
+              <strong>{money(item.subtotal)}</strong>
+            </div>
+          ))}
+        </div>
     {Number(order.discount_amount || 0) > 0 && <div className="summary-line rm-discount-line"><span>Coupon {order.coupon_code ? `· ${order.coupon_code}` : "discount"}</span><strong>−{money(order.discount_amount)}</strong></div>}
     <div className="rm-order-payment-meta"><div><span>Payment method</span><strong>{order.payment_method === "DEMO_PAYMENT" ? "Dummy online payment (demo)" : "Cash on Delivery"}</strong></div><div><span>Payment status</span><strong>{order.payment_status === "SIMULATED_PAID" ? "Simulated successful payment" : order.payment_status || "Pending"}</strong></div></div>
     <div className="order-total"><span>{order.payment_method === "COD" ? "Amount due on delivery" : "Demo order total"}</span><strong>{money(order.total_amount)}</strong></div>

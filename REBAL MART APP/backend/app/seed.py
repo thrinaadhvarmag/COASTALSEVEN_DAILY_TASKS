@@ -196,19 +196,22 @@ def seed_database():
             ))
             db.commit()
 
-        # 3. Seed & Update Products
-        existing_products = {p.name: p for p in db.query(Product).all()}
-        for item in INITIAL_PRODUCTS:
-            if item["name"] in existing_products:
-                p = existing_products[item["name"]]
-                p.image_url = item["image_url"]
-                p.price = item["price"]
-                p.stock = item["stock"]
-                p.description = item["description"]
-            else:
+        # 3. Seed Products if empty (never overwrite admin-customized images or details)
+        if db.query(Product).count() == 0:
+            for item in INITIAL_PRODUCTS:
                 prod = Product(**item)
                 db.add(prod)
-        db.commit()
+            db.commit()
+        else:
+            existing_names = {p.name.lower().strip() for p in db.query(Product.name).all() if p.name}
+            added = False
+            for item in INITIAL_PRODUCTS:
+                if item["name"].lower().strip() not in existing_names:
+                    prod = Product(**item)
+                    db.add(prod)
+                    added = True
+            if added:
+                db.commit()
 
         # 4. Seed Initial Orders for Analytics
         if db.query(Order).count() == 0:
