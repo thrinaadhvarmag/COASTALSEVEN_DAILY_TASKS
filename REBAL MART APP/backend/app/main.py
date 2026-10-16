@@ -261,6 +261,21 @@ def check_email_status(to: str = None):
         "google_webhook_configured": bool(GMAIL_WEBHOOK_URL)
     }
 
+@app.get("/health/email/order-test")
+def test_order_emails(to: str, type: str = "confirmation"):
+    """Live diagnostic endpoint to trigger an order confirmation or delivery email to any address."""
+    from app.email_service import send_order_confirmation_email, send_order_delivered_email
+    sample_items = [
+        {"product_name": "Salaar Deva Titanium Oversized T-Shirt", "quantity": 1, "size": "L", "subtotal": 1299.0},
+        {"product_name": "Kalki 2898 AD Bhairava Cyber Hoodie", "quantity": 1, "size": "XL", "subtotal": 2499.0}
+    ]
+    if type == "delivered":
+        success = send_order_delivered_email(to, "Rebel Fan", 101, 3798.0, sample_items)
+        return {"status": "DELIVERED" if success else "FAILED", "type": "delivered", "recipient": to}
+    else:
+        success = send_order_confirmation_email(to, "Rebel Fan", 101, 3798.0, sample_items, "H.No 4-21, Jubilee Hills, Hyderabad - 500033")
+        return {"status": "CONFIRMED" if success else "FAILED", "type": "confirmation", "recipient": to}
+
 # ==========================================
 # 1. AUTHENTICATION & PROFILE
 # ==========================================
@@ -270,6 +285,17 @@ ACTIVE_OTPS = {}
 active_connections = {}
 admin_connections = []
 order_connections = {}
+
+def dispatch_email_in_thread(send_func, *args, **kwargs):
+    """Executes email dispatch asynchronously in a detached daemon thread without blocking the request."""
+    def runner():
+        try:
+            success = send_func(*args, **kwargs)
+            print(f"[ASYNC EMAIL] {send_func.__name__} completed with status: {success}")
+        except Exception as err:
+            print(f"[ASYNC EMAIL ERROR] {send_func.__name__} failed: {err}")
+    t = threading.Thread(target=runner, daemon=True)
+    t.start()
 
 @app.post("/auth/login", response_model=LoginOTPResponse)
 def login_request(payload: UserLogin, db: Session = Depends(get_db)):
@@ -286,17 +312,13 @@ def login_request(payload: UserLogin, db: Session = Depends(get_db)):
         "expires_at": time.time() + 600  # 10 minute expiry
     }
 
-    # Dispatch OTP verification email via Celery async worker (with direct fallback)
+    # Dispatch OTP verification email directly in background thread (immediate delivery) + Celery backup
+    dispatch_email_in_thread(send_otp_email, user.email, otp_code)
     try:
         from app.celery_app import send_verification_email
         send_verification_email.delay(user.email, otp_code)
-        print(f"[CELERY QUEUED] OTP verification email queued for {user.email}")
-    except Exception as exc:
-        print(f"[CELERY NOTICE] Celery async queue unavailable: {exc}. Dispatching direct email.")
-        try:
-            send_otp_email(user.email, otp_code)
-        except Exception as mail_err:
-            print(f"[EMAIL ERROR] Direct fallback email failed: {mail_err}")
+    except Exception:
+        pass
     
     msg = f"A 6-digit verification code has been sent to {user.email}. Please check your Inbox and Spam folder."
 
@@ -671,6 +693,7 @@ def place_order(payload: OrderCreate, current_user: User = Depends(get_current_u
         total_amount=total_amount,
         status="CONFIRMED",
         customer_name=payload.customer_name,
+        customer_email=current_user.email,
         phone=payload.phone,
         address=payload.address,
         city=payload.city,
@@ -695,7 +718,7 @@ def place_order(payload: OrderCreate, current_user: User = Depends(get_current_u
     db.commit()
     db.refresh(order)
 
-    # Dispatch Order Confirmation via Celery Task & Direct Fallback
+    # Dispatch Order Confirmation via immediate background thread + Celery backup
     order_items_summary = [
         {
             "product_name": it.product_name,
@@ -707,6 +730,17 @@ def place_order(payload: OrderCreate, current_user: User = Depends(get_current_u
     ]
     full_address = f"{order.address}, {order.city}, {order.state} - {order.pincode}"
     
+    from app.email_service import send_order_confirmation_email
+    dispatch_email_in_thread(
+        send_order_confirmation_email,
+        current_user.email,
+        order.customer_name or current_user.username,
+        order.id,
+        order.total_amount,
+        order_items_summary,
+        full_address
+    )
+
     try:
         from app.celery_app import send_order_confirmation_task
         send_order_confirmation_task.delay(
@@ -717,21 +751,8 @@ def place_order(payload: OrderCreate, current_user: User = Depends(get_current_u
             order_items_summary,
             full_address
         )
-        print(f"[CELERY QUEUED] Order confirmation email queued for order #{order.id} to {current_user.email}")
-    except Exception as exc:
-        print(f"[CELERY NOTICE] Celery queue not active: {exc}. Dispatching direct background email.")
-        try:
-            from app.email_service import send_order_confirmation_email
-            send_order_confirmation_email(
-                current_user.email,
-                order.customer_name or current_user.username,
-                order.id,
-                order.total_amount,
-                order_items_summary,
-                full_address
-            )
-        except Exception as err:
-            print(f"[EMAIL ERROR] Direct confirmation failed: {err}")
+    except Exception:
+        pass
 
     return order
 
@@ -782,10 +803,10 @@ async def update_order_status(order_id: int, payload: OrderStatusUpdate, admin: 
             except Exception:
                 pass
 
-    # If status transitioned to DELIVERED, dispatch Celery 'Thank You Rebel Visit Again' Email
+    # If status transitioned to DELIVERED, dispatch 'Thank You Rebel Visit Again' Email
     if new_status == "DELIVERED" and old_status != "DELIVERED":
-        user_recipient = db.query(User).filter(User.id == order.user_id).first()
-        recipient_email = user_recipient.email if user_recipient else None
+        user_recipient = db.query(User).filter(User.id == order.user_id).first() if order.user_id else None
+        recipient_email = getattr(order, "customer_email", None) or (user_recipient.email if user_recipient else None)
         if recipient_email:
             order_items_summary = [
                 {
@@ -796,6 +817,15 @@ async def update_order_status(order_id: int, payload: OrderStatusUpdate, admin: 
                     "size": it.size
                 } for it in order.items
             ]
+            from app.email_service import send_order_delivered_email
+            dispatch_email_in_thread(
+                send_order_delivered_email,
+                recipient_email,
+                order.customer_name or (user_recipient.username if user_recipient else "Rebel"),
+                order.id,
+                order.total_amount,
+                order_items_summary
+            )
             try:
                 from app.celery_app import send_order_delivered_task
                 send_order_delivered_task.delay(
@@ -805,20 +835,8 @@ async def update_order_status(order_id: int, payload: OrderStatusUpdate, admin: 
                     order.total_amount,
                     order_items_summary
                 )
-                print(f"[CELERY QUEUED] Order delivered email queued for order #{order.id} to {recipient_email}")
-            except Exception as exc:
-                print(f"[CELERY NOTICE] Celery queue not active: {exc}. Dispatching direct background email.")
-                try:
-                    from app.email_service import send_order_delivered_email
-                    send_order_delivered_email(
-                        recipient_email,
-                        order.customer_name or (user_recipient.username if user_recipient else "Rebel"),
-                        order.id,
-                        order.total_amount,
-                        order_items_summary
-                    )
-                except Exception as err:
-                    print(f"[EMAIL ERROR] Direct delivery email failed: {err}")
+            except Exception:
+                pass
 
     return order
 

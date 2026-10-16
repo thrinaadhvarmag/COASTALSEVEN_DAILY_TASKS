@@ -60,6 +60,7 @@ class Order(Base):
     total_amount = Column(Float, nullable=False)
     status = Column(String(50), default="CONFIRMED")  # "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"
     customer_name = Column(String(200), nullable=True)
+    customer_email = Column(String(255), nullable=True)
     phone = Column(String(50), nullable=True)
     address = Column(Text, nullable=True)
     city = Column(String(100), nullable=True)
