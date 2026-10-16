@@ -1786,11 +1786,24 @@ a {
 .product-footer {
   margin-top: auto;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   padding-top: 10px;
   border-top: 1px solid var(--border-subtle);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.product-footer > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.product-action-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .rm-sale-price-stack {
@@ -5434,20 +5447,69 @@ a {
 
 @media (max-width: 580px) {
   .product-grid, .catalog-main .product-grid, .rm-similar-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .product-card {
+    border-radius: 14px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
   }
   .product-body {
-    padding: 12px;
+    padding: 10px 10px 12px 10px !important;
+    box-sizing: border-box !important;
   }
   .product-title {
-    font-size: 13.5px;
+    font-size: 13px !important;
+    margin-bottom: 2px !important;
   }
   .product-description {
-    display: none;
+    display: none !important;
+  }
+  .product-footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    padding-top: 8px !important;
+    margin-top: auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .product-footer > div {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
   }
   .rm-sale-price {
-    font-size: 15px;
+    font-size: 13.5px !important;
+    white-space: nowrap !important;
+    line-height: 1.1 !important;
+  }
+  .rm-sale-price-stack del {
+    font-size: 10px !important;
+  }
+  .product-footer span {
+    font-size: 9.5px !important;
+    white-space: nowrap !important;
+  }
+  .product-action-btn,
+  .product-footer .btn-primary.small,
+  .product-footer .btn-secondary.small {
+    padding: 5px 9px !important;
+    font-size: 11px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    gap: 4px !important;
+    border-radius: 7px !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .product-action-btn svg,
+  .product-footer .btn-primary.small svg,
+  .product-footer .btn-secondary.small svg {
+    width: 13px !important;
+    height: 13px !important;
   }
   .rm-benefits {
     grid-template-columns: 1fr;

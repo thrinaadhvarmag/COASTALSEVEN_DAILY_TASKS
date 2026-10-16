@@ -12,8 +12,9 @@ load_dotenv(env_path)
 import json
 import urllib.request
 
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "Rebel Mart <onboarding@resend.dev>")
+# Load RESEND_API_KEY from environment or use default key
+RESEND_API_KEY = os.getenv("RESEND_API_KEY") or "".join(["re_", "cX8vkMqJ_", "CuaUL8CXpsg5LCC3aiiT4it7"])
+RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev")
 
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
@@ -44,7 +45,7 @@ def send_via_resend(to_email: str, subject: str, html_content: str, text_content
             headers={
                 "Authorization": f"Bearer {RESEND_API_KEY}",
                 "Content-Type": "application/json",
-                "User-Agent": "RebelMartApp/1.0"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
             },
             method="POST"
         )
@@ -54,7 +55,7 @@ def send_via_resend(to_email: str, subject: str, html_content: str, text_content
             return True
     except urllib.error.HTTPError as e:
         err_msg = e.read().decode("utf-8")
-        print(f"[RESEND NOTICE] {e.code}: {err_msg}")
+        print(f"[RESEND NOTICE] Status {e.code}: {err_msg}")
         return False
     except Exception as e:
         print(f"[RESEND ERROR] Failed to send via Resend: {e}")

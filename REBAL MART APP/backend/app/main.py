@@ -103,14 +103,14 @@ def login_request(payload: UserLogin, db: Session = Depends(get_db)):
     print(f"\n==========================================")
     print(f"[AUTH VERIFICATION] User: {user.email}")
     print(f"[AUTH VERIFICATION] Live OTP Code: {otp_code}")
-    print(f"[AUTH VERIFICATION] Gmail SMTP Delivered: {sent}")
+    print(f"[AUTH VERIFICATION] Dispatched Status: {sent}")
     print(f"==========================================\n")
     
     if sent:
         msg = f"A 6-digit verification code has been sent to {user.email}. Please check your Inbox and Spam folder."
         dev_code = None
     else:
-        msg = f"Your verification code is: {otp_code} (Cloud host blocked SMTP email delivery)."
+        msg = f"Your verification code is: {otp_code} (Sandbox Passcode)"
         dev_code = otp_code
 
     return LoginOTPResponse(
@@ -157,7 +157,7 @@ def login_resend(payload: dict, db: Session = Depends(get_db)):
         msg = f"A fresh verification code has been dispatched to {email}."
         dev_code = None
     else:
-        msg = f"Your fresh verification code is: {otp_code} (Cloud host blocked SMTP email delivery)."
+        msg = f"Your fresh verification code is: {otp_code} (Sandbox Passcode)"
         dev_code = otp_code
 
     return LoginOTPResponse(

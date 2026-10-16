@@ -230,7 +230,7 @@ function ProductCard({
             {!admin ? (
               <button
                 disabled={loading || stock <= 0}
-                className="btn-primary small"
+                className="btn-primary small product-action-btn"
                 onClick={isClothing ? () => navigate(`/products/${product.id}`) : addToCart}
               >
                 {isClothing ? <ArrowUpRight size={14} /> : <ShoppingCart size={14} />}
