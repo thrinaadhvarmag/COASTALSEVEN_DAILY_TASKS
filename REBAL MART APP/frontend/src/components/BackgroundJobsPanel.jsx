@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, FileDown, LoaderCircle, UploadCloud, XCircle } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { backgroundApi } from "../services/api";
 import { getErrorMessage } from "../lib/constants";
 import { useToast } from "../context/ToastContext";
@@ -13,6 +14,7 @@ export default function BackgroundJobsPanel({ orders = [], mode = "all" }) {
     const [bulkInvoicesBusy, setBulkInvoicesBusy] = useState(false);
     const fileRef = useRef(null);
     const { show } = useToast();
+    const queryClient = useQueryClient();
 
     const active = useMemo(() => jobs.some((job) => !TERMINAL.has(job.state)), [jobs]);
     const effectiveSelectedOrder = selectedOrder || (orders[0]?.id ? String(orders[0].id) : "");
@@ -36,6 +38,10 @@ export default function BackgroundJobsPanel({ orders = [], mode = "all" }) {
             setJobs((current) => current.map((job) => {
                 const match = results.find(([taskId]) => taskId === job.taskId)?.[1];
                 if (!match) return job;
+                if (match.state === "SUCCESS" && match.result?.type === "csv_import") {
+                    queryClient.invalidateQueries({ queryKey: ["products"] });
+                    queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+                }
                 return { ...job, ...match };
             }));
         };
@@ -45,7 +51,7 @@ export default function BackgroundJobsPanel({ orders = [], mode = "all" }) {
             cancelled = true;
             window.clearInterval(timer);
         };
-    }, [active, jobs]);
+    }, [active, jobs, queryClient]);
 
     const addJob = (taskId, label) => {
         setJobs((current) => [{ taskId, label, state: "PENDING", progress: null, result: null, error: null }, ...current].slice(0, 8));
@@ -102,17 +108,40 @@ export default function BackgroundJobsPanel({ orders = [], mode = "all" }) {
         }
     };
 
+    const downloadSampleCsv = () => {
+        const header = "name,price,stock,movie_name,category,actor_name,description,tags\n";
+        const rows = [
+            'Salaar Deva Khansaar Oversized Tee,999,50,Salaar,Apparel,Prabhas,"Heavyweight 240 GSM graphic tee with high-density puff print.","Salaar, Tee, Streetwear"',
+            'Kalki 2898 AD Bhairava Cyber Hoodie,1899,40,Kalki 2898 AD,Hoodies,Prabhas,"Futuristic dystopian streetwear fleece with custom metallic trims.","Kalki, Hoodie, Cyberpunk"',
+            'Baahubali Royal Mahishmati Sword Keepsake,2999,25,Baahubali,Collectibles,Prabhas,"Official metal alloy display sword replica celebrating Amarendra Baahubali.","Baahubali, Keepsake, Steel"',
+            'The Raja Saab Vintage Supernatural Poster,499,80,The Raja Saab,Posters,Prabhas,"High-gloss vintage royal cinema poster with gold-foil insignia.","Raja Saab, Poster, Limited Edition"'
+        ].join("\n");
+        const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "rebel_mart_products_sample.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        show("Sample CSV template downloaded!");
+    };
+
     const importCsv = async (file) => {
         if (!file) return;
         if (!file.name.toLowerCase().endsWith(".csv")) {
-            show("Please select a CSV file", "error");
+            show("Please select a valid CSV file (.csv)", "error");
             return;
         }
         setImporting(true);
         try {
-            const { task_id } = await backgroundApi.importProducts(file);
-            addJob(task_id, `Bulk product import — ${file.name}`);
-            show("CSV import started in the background");
+            const data = await backgroundApi.importProducts(file);
+            addJob(data.task_id, `Bulk product import — ${file.name}`);
+            const count = data.imported || 0;
+            show(count > 0 ? `CSV import successful! ${count} products imported/updated.` : "CSV uploaded and processed successfully.");
+            await queryClient.invalidateQueries({ queryKey: ["products"] });
+            await queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         } catch (error) {
             show(getErrorMessage(error), "error");
         } finally {
@@ -153,11 +182,14 @@ export default function BackgroundJobsPanel({ orders = [], mode = "all" }) {
             {mode !== "invoices" && (
             <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
                 <input ref={fileRef} type="file" accept=".csv,text/csv" hidden onChange={(event) => importCsv(event.target.files?.[0])} />
-                <button className="btn-secondary" onClick={() => fileRef.current?.click()} disabled={importing}>
+                <button className="btn-primary" onClick={() => fileRef.current?.click()} disabled={importing}>
                     {importing ? <LoaderCircle className="spin" size={16} /> : <UploadCloud size={16} />}
-                    {importing ? "Uploading…" : "Import products CSV"}
+                    {importing ? "Importing…" : "Upload Products CSV"}
                 </button>
-                <span className="muted">Required columns: name, price, stock. Optional: description, image_url.</span>
+                <button type="button" className="btn-secondary" onClick={downloadSampleCsv} title="Download CSV template format">
+                    <FileDown size={16} /> Download Sample Template
+                </button>
+                <span className="muted" style={{ fontSize: "12px" }}>Columns: name, price, stock, movie_name, category, description, tags, image_url.</span>
             </div>
 
             )}

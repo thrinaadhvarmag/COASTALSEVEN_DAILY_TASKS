@@ -161,7 +161,11 @@ function HomepageEditor({ show }) {
         if (files[`campaign-${i}`]) {
           setUploading(i);
           const data = await uploadImage(`campaign-${i}`, `/homepage/campaigns/${i}/image`);
-          if (data?.campaigns) content.campaigns = data.campaigns;
+          if (data?.image) {
+            content.campaigns[i].image = data.image;
+          } else if (data?.campaigns && data.campaigns.length) {
+            content.campaigns = data.campaigns;
+          }
         }
       }
       for (const key of ["category-0", "category-1", "category-2", "category-3", "editorial-image"]) {
@@ -394,6 +398,7 @@ export default function AdminDashboard() {
   });
   const [aiPolicySaving, setAiPolicySaving] = useState(false);
   const fileRef = useRef();
+  const imageTargetFileRef = useRef();
   const { show } = useToast();
   const queryClient = useQueryClient();
   const productsQuery = useAdminProducts();
@@ -1987,36 +1992,54 @@ export default function AdminDashboard() {
 
       {/* 8. PRODUCT IMAGE MODAL */}
       {section === "products" && imageTarget && (
-        <div className="modal-backdrop">
-          <div className="modal">
+        <div className="modal-backdrop" onClick={() => { setImageTarget(null); setImagePreview(""); }}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-head">
               <div>
                 <div className="eyebrow">Product Media</div>
                 <h2>Change Product Image</h2>
                 <p>{imageTarget.name}</p>
               </div>
-              <button className="icon-btn" onClick={() => { setImageTarget(null); setImagePreview(""); }}>
+              <button className="icon-btn" type="button" onClick={() => { setImageTarget(null); setImagePreview(""); }} title="Close">
                 <X size={18} />
               </button>
             </div>
 
-            <div className="image-picker large-picker" onClick={() => fileRef.current?.click()}>
+            <input
+              ref={imageTargetFileRef}
+              hidden
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+                    show("Choose a JPG, PNG, or WEBP image under 5 MB", "error");
+                    return;
+                  }
+                  setImageFile(file);
+                  setImagePreview(URL.createObjectURL(file));
+                }
+              }}
+            />
+
+            <div className="image-picker large-picker" onClick={() => imageTargetFileRef.current?.click()} style={{ cursor: "pointer" }}>
               {imagePreview ? (
                 <img src={imagePreview} alt="Preview" />
               ) : (
                 <div className="upload-empty">
-                  <ImagePlus size={32} color="var(--accent)" />
-                  <strong>Select replacement image</strong>
-                  <span>JPG, PNG or WEBP under 5 MB</span>
+                  <ImagePlus size={36} color="var(--accent)" />
+                  <strong>Click or tap to choose replacement image</strong>
+                  <span>JPG, PNG or WEBP up to 5 MB</span>
                 </div>
               )}
             </div>
 
-            <div className="form-actions" style={{ marginTop: 18 }}>
-              <button className="btn-secondary" onClick={() => setImageTarget(null)}>
+            <div className="form-actions" style={{ marginTop: 18, display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <button className="btn-secondary" type="button" onClick={() => { setImageTarget(null); setImagePreview(""); }}>
                 Cancel
               </button>
-              <button className="btn-primary" disabled={!imageFile || busy} onClick={uploadOnly}>
+              <button className="btn-primary" type="button" disabled={!imageFile || busy} onClick={uploadOnly}>
                 {busy ? "Uploading…" : "Upload New Image"}
               </button>
             </div>

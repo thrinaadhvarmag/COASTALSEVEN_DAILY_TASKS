@@ -59,7 +59,7 @@ const HeroCarousel = memo(function HeroCarousel({ campaigns = CAMPAIGNS }) {
       <img
         key={item.image}
         className="rm-campaign-image"
-        src={item.image?.startsWith("/uploads/") ? imageUrl(item.image) : item.image}
+        src={imageUrl(item.image)}
         alt="Featured Rebel Mart fan collection"
         fetchPriority="high"
       />
@@ -166,12 +166,14 @@ const DEFAULT_CONTENT = {
     description: "Be the first to hear about upcoming movie drops, limited edition figurines, and VIP fan club discounts.",
     cta: "Join Rebel Club Free",
   },
+  campaigns: CAMPAIGNS,
 };
 
 function mergeContent(data) {
   return {
     ...DEFAULT_CONTENT,
     ...(data || {}),
+    campaigns: (data?.campaigns && data.campaigns.length > 0) ? data.campaigns : CAMPAIGNS,
     promo: { ...DEFAULT_CONTENT.promo, ...(data?.promo || {}) },
     sale: { ...DEFAULT_CONTENT.sale, ...(data?.sale || {}) },
     categoriesTitle: { ...DEFAULT_CONTENT.categoriesTitle, ...(data?.categoriesTitle || {}) },
